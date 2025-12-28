@@ -1,7 +1,7 @@
 "use client";
 
 import { MoreHorizontal, Search, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
@@ -45,14 +45,14 @@ export default function UsersPage() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [isDeleting, setIsDeleting] = useState(false);
 
-	const fetchUsers = async () => {
+	const fetchUsers = useCallback(async () => {
 		setIsLoading(true);
 		try {
 			const data = await adminApi.getUsers({
 				page,
 				size: 20,
 				search: search || undefined,
-				role: roleFilter || undefined,
+				role: roleFilter === "all" ? undefined : roleFilter || undefined,
 			});
 			setUsers(data.content);
 			setTotalPages(data.totalPages);
@@ -61,18 +61,10 @@ export default function UsersPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [page, search, roleFilter]);
 
 	useEffect(() => {
 		fetchUsers();
-	}, [fetchUsers]);
-
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setPage(0);
-			fetchUsers();
-		}, 300);
-		return () => clearTimeout(timer);
 	}, [fetchUsers]);
 
 	const handleDelete = async () => {
@@ -130,12 +122,12 @@ export default function UsersPage() {
 						className="pl-9"
 					/>
 				</div>
-				<Select value={roleFilter} onValueChange={setRoleFilter}>
+				<Select value={roleFilter || "all"} onValueChange={setRoleFilter}>
 					<SelectTrigger className="w-[180px]">
 						<SelectValue placeholder="All roles" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="">All roles</SelectItem>
+						<SelectItem value="all">All roles</SelectItem>
 						<SelectItem value="user">User</SelectItem>
 						<SelectItem value="data_admin">Data Admin</SelectItem>
 						<SelectItem value="super_admin">Super Admin</SelectItem>

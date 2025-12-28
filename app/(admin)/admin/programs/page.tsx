@@ -9,7 +9,7 @@ import {
 	Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
@@ -43,7 +43,7 @@ export default function ProgramsPage() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [isDeleting, setIsDeleting] = useState(false);
 
-	const fetchPrograms = async () => {
+	const fetchPrograms = useCallback(async () => {
 		setIsLoading(true);
 		try {
 			const data = await adminApi.getPrograms({
@@ -58,18 +58,10 @@ export default function ProgramsPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [page, search]);
 
 	useEffect(() => {
 		fetchPrograms();
-	}, [fetchPrograms]);
-
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setPage(0);
-			fetchPrograms();
-		}, 300);
-		return () => clearTimeout(timer);
 	}, [fetchPrograms]);
 
 	const handleDelete = async () => {

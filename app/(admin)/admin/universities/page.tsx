@@ -2,7 +2,7 @@
 
 import { MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
@@ -37,7 +37,7 @@ export default function UniversitiesPage() {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [isDeleting, setIsDeleting] = useState(false);
 
-	const fetchUniversities = async () => {
+	const fetchUniversities = useCallback(async () => {
 		setIsLoading(true);
 		try {
 			const data = await adminApi.getUniversities({
@@ -52,18 +52,10 @@ export default function UniversitiesPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [page, search]);
 
 	useEffect(() => {
 		fetchUniversities();
-	}, [fetchUniversities]);
-
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setPage(0);
-			fetchUniversities();
-		}, 300);
-		return () => clearTimeout(timer);
 	}, [fetchUniversities]);
 
 	const handleDelete = async () => {
