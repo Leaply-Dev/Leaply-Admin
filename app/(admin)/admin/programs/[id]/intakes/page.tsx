@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
@@ -77,7 +77,7 @@ export default function IntakesPage() {
 	const [startDate, setStartDate] = useState("");
 	const [isActive, setIsActive] = useState("true");
 
-	const fetchData = async () => {
+	const fetchData = useCallback(async () => {
 		setIsLoading(true);
 		try {
 			const [programData, intakesData] = await Promise.all([
@@ -91,7 +91,7 @@ export default function IntakesPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [programId]);
 
 	useEffect(() => {
 		fetchData();
