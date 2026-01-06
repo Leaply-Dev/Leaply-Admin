@@ -1,6 +1,7 @@
 "use client";
 
 import {
+	Award,
 	Building2,
 	GraduationCap,
 	LayoutDashboard,
@@ -16,6 +17,7 @@ const navItems = [
 	{ href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
 	{ href: "/admin/universities", icon: Building2, label: "Universities" },
 	{ href: "/admin/programs", icon: GraduationCap, label: "Programs" },
+	{ href: "/admin/scholarships", icon: Award, label: "Scholarships" },
 	{ href: "/admin/users", icon: Users, label: "Users" },
 	{ href: "/admin/import", icon: Upload, label: "Import" },
 ];

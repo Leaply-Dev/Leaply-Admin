@@ -12,6 +12,10 @@ import type {
 	ProgramCreateRequest,
 	ProgramListParams,
 	ProgramUpdateRequest,
+	ScholarshipAdminResponse,
+	ScholarshipCreateRequest,
+	ScholarshipListParams,
+	ScholarshipUpdateRequest,
 	UniversityAdminResponse,
 	UniversityCreateRequest,
 	UniversityListParams,
@@ -167,6 +171,53 @@ export async function deleteIntake(id: string): Promise<void> {
 	return apiClient.delete(`/v1/admin/intakes/${id}`);
 }
 
+// Scholarships
+export async function getScholarships(
+	params?: ScholarshipListParams,
+): Promise<PageResponse<ScholarshipAdminResponse>> {
+	return apiClient.get<PageResponse<ScholarshipAdminResponse>>(
+		`/v1/admin/scholarships${buildQueryString(params)}`,
+	);
+}
+
+export async function getScholarship(
+	id: string,
+): Promise<ScholarshipAdminResponse> {
+	return apiClient.get<ScholarshipAdminResponse>(`/v1/admin/scholarships/${id}`);
+}
+
+export async function createScholarship(
+	data: ScholarshipCreateRequest,
+): Promise<ScholarshipAdminResponse> {
+	return apiClient.post<ScholarshipAdminResponse>(
+		"/v1/admin/scholarships",
+		data,
+	);
+}
+
+export async function updateScholarship(
+	id: string,
+	data: ScholarshipUpdateRequest,
+): Promise<ScholarshipAdminResponse> {
+	return apiClient.put<ScholarshipAdminResponse>(
+		`/v1/admin/scholarships/${id}`,
+		data,
+	);
+}
+
+export async function deleteScholarship(id: string): Promise<void> {
+	return apiClient.delete(`/v1/admin/scholarships/${id}`);
+}
+
+export async function toggleScholarshipActive(
+	id: string,
+): Promise<ScholarshipAdminResponse> {
+	return apiClient.patch<ScholarshipAdminResponse>(
+		`/v1/admin/scholarships/${id}/toggle-active`,
+		{},
+	);
+}
+
 // CSV Import
 export async function importUniversities(
 	file: File,
@@ -313,6 +364,12 @@ export const adminApi = {
 	createIntake,
 	updateIntake,
 	deleteIntake,
+	getScholarships,
+	getScholarship,
+	createScholarship,
+	updateScholarship,
+	deleteScholarship,
+	toggleScholarshipActive,
 	importUniversities,
 	importPrograms,
 	importIntakes,

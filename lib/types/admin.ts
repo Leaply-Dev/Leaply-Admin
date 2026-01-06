@@ -206,6 +206,148 @@ export interface IntakeCreateRequest {
 
 export type IntakeUpdateRequest = Partial<IntakeCreateRequest>;
 
+// Scholarship Admin
+export type ScholarshipSourceType =
+	| "university"
+	| "government"
+	| "foundation"
+	| "corporate"
+	| "bilateral";
+
+export type ScholarshipCoverageType =
+	| "full_funded"
+	| "full_tuition"
+	| "partial_tuition"
+	| "stipend_only"
+	| "other";
+
+export type ScholarshipCoverageDuration =
+	| "first_year"
+	| "annual_renewable"
+	| "full_program"
+	| "one_time";
+
+export type ScholarshipEligibilityType = "merit" | "need_based" | "hybrid";
+
+export type ScholarshipEligibilityFocus =
+	| "academic"
+	| "holistic"
+	| "leadership"
+	| "research"
+	| "community_service";
+
+export type ScholarshipDegreeLevel = "bachelor" | "master" | "phd";
+
+export type RequiredDocument =
+	| "transcript"
+	| "cv"
+	| "motivation_letter"
+	| "recommendation_letters"
+	| "portfolio"
+	| "research_proposal"
+	| "financial_documents"
+	| "language_certificate";
+
+export interface ScholarshipAdditionalBenefits {
+	travel?: boolean;
+	living_stipend_monthly?: number;
+	health_insurance?: boolean;
+	books?: boolean;
+	visa_support?: boolean;
+	accommodation?: boolean;
+}
+
+export interface ScholarshipAdminResponse {
+	id: string;
+	name: string;
+	url: string | null;
+	description: string | null;
+	universityId: string | null;
+	universityName: string | null;
+	country: string;
+	sourceType: ScholarshipSourceType;
+	sourceName: string | null;
+	degreeLevels: ScholarshipDegreeLevel[];
+	eligibleFields: string[] | null;
+	coverageType: ScholarshipCoverageType;
+	coveragePercentage: number | null;
+	coverageAmount: number | null;
+	coverageCurrency: string;
+	coverageDuration: ScholarshipCoverageDuration;
+	additionalBenefits: ScholarshipAdditionalBenefits | null;
+	eligibilityType: ScholarshipEligibilityType;
+	eligibilityFocus: ScholarshipEligibilityFocus | null;
+	minGpa: number | null;
+	gpaScale: number;
+	minIelts: number | null;
+	minToefl: number | null;
+	workExperienceRequired: boolean;
+	minWorkExperienceYears: number | null;
+	requiredDocuments: RequiredDocument[];
+	nationalityEligible: string[] | null;
+	otherRequirements: string | null;
+	applicationOpenDate: string | null;
+	applicationDeadline: string | null;
+	intakeSeasons: string[];
+	isActive: boolean;
+	dataSource: string | null;
+	dataVerifiedAt: string | null;
+	notes: string | null;
+	createdAt: string;
+	updatedAt: string;
+	createdBy: string | null;
+	updatedBy: string | null;
+}
+
+export interface ScholarshipCreateRequest {
+	name: string;
+	url?: string;
+	description?: string;
+	universityId?: string;
+	country?: string;
+	sourceType?: ScholarshipSourceType;
+	sourceName?: string;
+	degreeLevels: ScholarshipDegreeLevel[];
+	eligibleFields?: string[];
+	coverageType: ScholarshipCoverageType;
+	coveragePercentage?: number;
+	coverageAmount?: number;
+	coverageCurrency?: string;
+	coverageDuration?: ScholarshipCoverageDuration;
+	additionalBenefits?: ScholarshipAdditionalBenefits;
+	eligibilityType?: ScholarshipEligibilityType;
+	eligibilityFocus?: ScholarshipEligibilityFocus;
+	minGpa?: number;
+	gpaScale?: number;
+	minIelts?: number;
+	minToefl?: number;
+	workExperienceRequired?: boolean;
+	minWorkExperienceYears?: number;
+	requiredDocuments?: RequiredDocument[];
+	nationalityEligible?: string[];
+	otherRequirements?: string;
+	applicationOpenDate?: string;
+	applicationDeadline?: string;
+	intakeSeasons?: string[];
+	isActive?: boolean;
+	dataSource?: string;
+	notes?: string;
+}
+
+export type ScholarshipUpdateRequest = Partial<ScholarshipCreateRequest>;
+
+export interface ScholarshipListParams {
+	page?: number;
+	size?: number;
+	search?: string;
+	universityId?: string;
+	country?: string;
+	sourceType?: ScholarshipSourceType;
+	coverageType?: ScholarshipCoverageType;
+	eligibilityType?: ScholarshipEligibilityType;
+	isActive?: boolean;
+}
+
 // CSV Import
 export interface ImportResultResponse {
 	total: number;
