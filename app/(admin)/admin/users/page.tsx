@@ -1,18 +1,11 @@
 "use client";
 
-import { MoreHorizontal, Search, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DataTable } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
@@ -21,18 +14,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 import { adminApi } from "@/lib/api/adminApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import type { UserAdminResponse } from "@/lib/types/admin";
+import { createUserColumns } from "./columns";
 
 export default function UsersPage() {
 	const { profile, isSuperAdmin } = useAuthStore();
@@ -81,32 +66,30 @@ export default function UsersPage() {
 		}
 	};
 
-	const handleRoleChange = async (userId: string, newRole: string) => {
-		try {
-			await adminApi.updateUserRole(userId, {
-				role: newRole as "user" | "data_admin" | "super_admin",
-			});
-			fetchUsers();
-		} catch (error) {
-			console.error("Failed to update user role:", error);
-		}
-	};
+	const handleRoleChange = useCallback(
+		async (userId: string, newRole: string) => {
+			try {
+				await adminApi.updateUserRole(userId, {
+					role: newRole as "user" | "data admin" | "super admin",
+				});
+				fetchUsers();
+			} catch (error) {
+				console.error("Failed to update user role:", error);
+			}
+		},
+		[fetchUsers],
+	);
 
-	const getRoleBadgeVariant = (role: string) => {
-		switch (role) {
-			case "super_admin":
-				return "destructive";
-			case "data_admin":
-				return "default";
-			default:
-				return "secondary";
-		}
-	};
-
-	const formatDate = (dateString: string | null) => {
-		if (!dateString) return "-";
-		return new Date(dateString).toLocaleDateString();
-	};
+	const columns = useMemo(
+		() =>
+			createUserColumns({
+				onRoleChange: handleRoleChange,
+				onDelete: setDeleteId,
+				isSuperAdmin: isSuperAdmin(),
+				currentUserId: profile?.id,
+			}),
+		[handleRoleChange, isSuperAdmin, profile?.id],
+	);
 
 	return (
 		<div>
@@ -123,140 +106,25 @@ export default function UsersPage() {
 					/>
 				</div>
 				<Select value={roleFilter || "all"} onValueChange={setRoleFilter}>
-					<SelectTrigger className="w-[180px]">
+					<SelectTrigger className="w-35">
 						<SelectValue placeholder="All roles" />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All roles</SelectItem>
 						<SelectItem value="user">User</SelectItem>
-						<SelectItem value="data_admin">Data Admin</SelectItem>
-						<SelectItem value="super_admin">Super Admin</SelectItem>
+						<SelectItem value="data admin">Data Admin</SelectItem>
+						<SelectItem value="super admin">Super Admin</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
 
-			<div className="bg-card rounded-lg border">
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead>Name</TableHead>
-							<TableHead>Email</TableHead>
-							<TableHead>Role</TableHead>
-							<TableHead>Onboarding</TableHead>
-							<TableHead>Last Active</TableHead>
-							<TableHead>Joined</TableHead>
-							{isSuperAdmin() && <TableHead className="w-[70px]" />}
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{isLoading ? (
-							Array.from({ length: 5 }).map((_, i) => (
-								<TableRow key={i}>
-									<TableCell>
-										<Skeleton className="h-4 w-32" />
-									</TableCell>
-									<TableCell>
-										<Skeleton className="h-4 w-40" />
-									</TableCell>
-									<TableCell>
-										<Skeleton className="h-4 w-20" />
-									</TableCell>
-									<TableCell>
-										<Skeleton className="h-4 w-16" />
-									</TableCell>
-									<TableCell>
-										<Skeleton className="h-4 w-24" />
-									</TableCell>
-									<TableCell>
-										<Skeleton className="h-4 w-24" />
-									</TableCell>
-									{isSuperAdmin() && (
-										<TableCell>
-											<Skeleton className="h-8 w-8" />
-										</TableCell>
-									)}
-								</TableRow>
-							))
-						) : users.length === 0 ? (
-							<TableRow>
-								<TableCell
-									colSpan={isSuperAdmin() ? 7 : 6}
-									className="text-center text-muted-foreground py-8"
-								>
-									No users found
-								</TableCell>
-							</TableRow>
-						) : (
-							users.map((user) => (
-								<TableRow key={user.id}>
-									<TableCell className="font-medium">
-										{user.fullName || "-"}
-									</TableCell>
-									<TableCell>{user.email}</TableCell>
-									<TableCell>
-										{isSuperAdmin() && user.id !== profile?.id ? (
-											<Select
-												value={user.role}
-												onValueChange={(value) =>
-													handleRoleChange(user.id, value)
-												}
-											>
-												<SelectTrigger className="w-[130px]">
-													<SelectValue />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="user">User</SelectItem>
-													<SelectItem value="data_admin">Data Admin</SelectItem>
-													<SelectItem value="super_admin">
-														Super Admin
-													</SelectItem>
-												</SelectContent>
-											</Select>
-										) : (
-											<Badge variant={getRoleBadgeVariant(user.role)}>
-												{user.role.replace("_", " ")}
-											</Badge>
-										)}
-									</TableCell>
-									<TableCell>
-										<Badge
-											variant={
-												user.onboardingCompleted ? "default" : "secondary"
-											}
-										>
-											{user.onboardingCompleted ? "Complete" : "Pending"}
-										</Badge>
-									</TableCell>
-									<TableCell>{formatDate(user.lastActiveAt)}</TableCell>
-									<TableCell>{formatDate(user.createdAt)}</TableCell>
-									{isSuperAdmin() && (
-										<TableCell>
-											{user.id !== profile?.id && (
-												<DropdownMenu>
-													<DropdownMenuTrigger asChild>
-														<Button variant="ghost" size="icon">
-															<MoreHorizontal className="h-4 w-4" />
-														</Button>
-													</DropdownMenuTrigger>
-													<DropdownMenuContent align="end">
-														<DropdownMenuItem
-															className="text-destructive"
-															onClick={() => setDeleteId(user.id)}
-														>
-															<Trash2 className="h-4 w-4 mr-2" />
-															Delete
-														</DropdownMenuItem>
-													</DropdownMenuContent>
-												</DropdownMenu>
-											)}
-										</TableCell>
-									)}
-								</TableRow>
-							))
-						)}
-					</TableBody>
-				</Table>
-			</div>
+			{isLoading ? (
+				<div className="bg-card rounded-lg border p-8 text-center text-muted-foreground">
+					Loading...
+				</div>
+			) : (
+				<DataTable columns={columns} data={users} />
+			)}
 
 			<Pagination
 				currentPage={page}
