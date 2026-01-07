@@ -44,7 +44,7 @@ export interface UserAdminResponse {
 	id: string;
 	email: string;
 	fullName: string | null;
-	role: "user" | "data admin" | "super admin";
+	role: "user" | "data_admin" | "super_admin";
 	onboardingCompleted: boolean;
 	profileCompletion: number;
 	lastActiveAt: string | null;
@@ -52,7 +52,7 @@ export interface UserAdminResponse {
 }
 
 export interface UserRoleUpdateRequest {
-	role: "user" | "data admin" | "super admin";
+	role: "user" | "data_admin" | "super_admin";
 }
 
 // University Admin

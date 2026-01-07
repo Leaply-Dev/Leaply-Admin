@@ -70,7 +70,7 @@ export default function UsersPage() {
 		async (userId: string, newRole: string) => {
 			try {
 				await adminApi.updateUserRole(userId, {
-					role: newRole as "user" | "data admin" | "super admin",
+					role: newRole as "user" | "data_admin" | "super_admin",
 				});
 				fetchUsers();
 			} catch (error) {
@@ -112,8 +112,8 @@ export default function UsersPage() {
 					<SelectContent>
 						<SelectItem value="all">All roles</SelectItem>
 						<SelectItem value="user">User</SelectItem>
-						<SelectItem value="data admin">Data Admin</SelectItem>
-						<SelectItem value="super admin">Super Admin</SelectItem>
+						<SelectItem value="data_admin">Data Admin</SelectItem>
+						<SelectItem value="super_admin">Super Admin</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
