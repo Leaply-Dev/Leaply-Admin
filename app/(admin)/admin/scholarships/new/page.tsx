@@ -3,7 +3,7 @@
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { adminApi } from "@/lib/api/adminApi";
 import type {
     ScholarshipCoverageDuration,
@@ -54,7 +55,6 @@ export default function NewScholarshipPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [universities, setUniversities] = useState<UniversityAdminResponse[]>([]);
 
     // Basic Info
     const [name, setName] = useState("");
@@ -63,6 +63,7 @@ export default function NewScholarshipPage() {
     const [sourceType, setSourceType] = useState<ScholarshipSourceType>("university");
     const [sourceName, setSourceName] = useState("");
     const [universityId, setUniversityId] = useState("");
+    const [universityDisplay, setUniversityDisplay] = useState("");
     const [country, setCountry] = useState("");
 
     // Target & Scope
@@ -97,27 +98,15 @@ export default function NewScholarshipPage() {
     const [isActive, setIsActive] = useState(true);
     const [notes, setNotes] = useState("");
 
-    useEffect(() => {
-        const fetchUniversities = async () => {
-            try {
-                const data = await adminApi.getUniversities({ size: 100 });
-                setUniversities(data.content);
-            } catch (err) {
-                console.error("Failed to fetch universities:", err);
-            }
-        };
-        fetchUniversities();
-    }, []);
-
-    // Auto-fill country when university is selected
-    useEffect(() => {
-        if (universityId) {
-            const uni = universities.find((u) => u.id === universityId);
-            if (uni) {
-                setCountry(uni.country);
-            }
+    const handleUniversityChange = (id: string, item?: UniversityAdminResponse) => {
+        setUniversityId(id);
+        if (item) {
+            setUniversityDisplay(`${item.name} - ${item.country}`);
+            setCountry(item.country);
+        } else {
+            setUniversityDisplay("");
         }
-    }, [universityId, universities]);
+    };
 
     const handleDegreeLevelChange = (level: ScholarshipDegreeLevel, checked: boolean) => {
         if (checked) {
@@ -275,22 +264,18 @@ export default function NewScholarshipPage() {
                                 <Label htmlFor="universityId">
                                     University {sourceType === "university" ? "*" : ""}
                                 </Label>
-                                <Select
+                                <SearchableSelect<UniversityAdminResponse>
                                     value={universityId}
-                                    onValueChange={setUniversityId}
+                                    onChange={handleUniversityChange}
+                                    searchFn={adminApi.searchUniversities}
+                                    displayFn={(uni) => `${uni.name} - ${uni.country}`}
+                                    getIdFn={(uni) => uni.id}
+                                    placeholder="Search universities..."
+                                    recentStorageKey="leaply-recent-universities"
                                     disabled={isLoading}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select university" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {universities.map((uni) => (
-                                            <SelectItem key={uni.id} value={uni.id}>
-                                                {uni.name} - {uni.country}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    required={sourceType === "university"}
+                                    selectedDisplayValue={universityDisplay}
+                                />
                             </div>
 
                             <div className="space-y-2">

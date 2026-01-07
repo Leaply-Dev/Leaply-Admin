@@ -77,6 +77,16 @@ export async function getUniversities(
 	);
 }
 
+export async function searchUniversities(
+	query: string,
+	limit = 10,
+): Promise<UniversityAdminResponse[]> {
+	const data = await apiClient.get<PageResponse<UniversityAdminResponse>>(
+		`/v1/admin/universities?search=${encodeURIComponent(query)}&size=${limit}`,
+	);
+	return data.content;
+}
+
 export async function getUniversity(
 	id: string,
 ): Promise<UniversityAdminResponse> {
@@ -350,6 +360,7 @@ export const adminApi = {
 	deleteUser,
 	updateUserRole,
 	getUniversities,
+	searchUniversities,
 	getUniversity,
 	createUniversity,
 	updateUniversity,

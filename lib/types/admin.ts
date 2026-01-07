@@ -108,6 +108,9 @@ export interface ProgramAdminResponse {
 	majorSubcategory: string | null;
 	durationMonths: number | null;
 	deliveryMode: string | null;
+	studyTypes: string[] | null;
+	prerequisiteMajors: string[] | null;
+	minWorkExperienceYears: number | null;
 	language: string;
 	tuition: {
 		annualUsd?: number;
@@ -145,6 +148,9 @@ export interface ProgramCreateRequest {
 	majorSubcategory?: string;
 	durationMonths?: number;
 	deliveryMode?: string;
+	studyTypes?: string[];
+	prerequisiteMajors?: string[];
+	minWorkExperienceYears?: number;
 	language?: string;
 	tuition?: {
 		annualUsd?: number;

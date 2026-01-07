@@ -1,9 +1,9 @@
 "use client";
 
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,23 +16,34 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { adminApi } from "@/lib/api/adminApi";
 import type { UniversityAdminResponse } from "@/lib/types/admin";
+
+const PREREQUISITE_SUGGESTIONS = [
+	"Computer Science",
+	"Engineering",
+	"Mathematics",
+	"Business",
+	"Economics",
+	"Statistics",
+	"Physics",
+	"Any Bachelor's",
+];
 
 export default function NewProgramPage() {
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [universities, setUniversities] = useState<UniversityAdminResponse[]>(
-		[],
-	);
 
 	const [universityId, setUniversityId] = useState("");
+	const [universityDisplay, setUniversityDisplay] = useState("");
 	const [name, setName] = useState("");
 	const [degreeType, setDegreeType] = useState("");
 	const [degreeName, setDegreeName] = useState("");
 	const [durationMonths, setDurationMonths] = useState("");
 	const [deliveryMode, setDeliveryMode] = useState("");
+	const [studyTypes, setStudyTypes] = useState<string[]>(["Full-time"]);
 	const [language, setLanguage] = useState("english");
 	const [tuitionAnnualUsd, setTuitionAnnualUsd] = useState("");
 	const [applicationFeeUsd, setApplicationFeeUsd] = useState("");
@@ -42,18 +53,51 @@ export default function NewProgramPage() {
 	const [toeflMinimum, setToeflMinimum] = useState("");
 	const [programUrl, setProgramUrl] = useState("");
 	const [description, setDescription] = useState("");
+	// New fields
+	const [prerequisiteMajors, setPrerequisiteMajors] = useState<string[]>([]);
+	const [prerequisiteInput, setPrerequisiteInput] = useState("");
+	const [minWorkExperienceYears, setMinWorkExperienceYears] = useState("");
 
-	useEffect(() => {
-		const fetchUniversities = async () => {
-			try {
-				const data = await adminApi.getUniversities({ size: 100 });
-				setUniversities(data.content);
-			} catch (err) {
-				console.error("Failed to fetch universities:", err);
-			}
-		};
-		fetchUniversities();
-	}, []);
+	const handleUniversityChange = (
+		id: string,
+		item?: UniversityAdminResponse,
+	) => {
+		setUniversityId(id);
+		if (item) {
+			setUniversityDisplay(`${item.name} - ${item.country}`);
+		} else {
+			setUniversityDisplay("");
+		}
+	};
+
+	const handleStudyTypeChange = (type: string, checked: boolean) => {
+		if (checked) {
+			setStudyTypes([...studyTypes, type]);
+		} else {
+			setStudyTypes(studyTypes.filter((t) => t !== type));
+		}
+	};
+
+	const addPrerequisiteMajor = (major: string) => {
+		const trimmed = major.trim();
+		if (trimmed && !prerequisiteMajors.includes(trimmed)) {
+			setPrerequisiteMajors([...prerequisiteMajors, trimmed]);
+		}
+		setPrerequisiteInput("");
+	};
+
+	const removePrerequisiteMajor = (major: string) => {
+		setPrerequisiteMajors(prerequisiteMajors.filter((m) => m !== major));
+	};
+
+	const handlePrerequisiteKeyDown = (
+		e: React.KeyboardEvent<HTMLInputElement>,
+	) => {
+		if (e.key === "Enter" || e.key === ",") {
+			e.preventDefault();
+			addPrerequisiteMajor(prerequisiteInput);
+		}
+	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -70,6 +114,12 @@ export default function NewProgramPage() {
 					? Number.parseInt(durationMonths, 10)
 					: undefined,
 				deliveryMode: deliveryMode || undefined,
+				studyTypes: studyTypes.length > 0 ? studyTypes : undefined,
+				prerequisiteMajors:
+					prerequisiteMajors.length > 0 ? prerequisiteMajors : undefined,
+				minWorkExperienceYears: minWorkExperienceYears
+					? Number.parseInt(minWorkExperienceYears, 10)
+					: undefined,
 				language: language || undefined,
 				tuition: tuitionAnnualUsd
 					? { annualUsd: Number.parseInt(tuitionAnnualUsd, 10) }
@@ -117,37 +167,33 @@ export default function NewProgramPage() {
 				}
 			/>
 
-			<Card>
-				<CardHeader>
-					<CardTitle>Program Details</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<form onSubmit={handleSubmit} className="space-y-6">
-						{error && (
-							<div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
-								{error}
-							</div>
-						)}
+			<form onSubmit={handleSubmit} className="space-y-6">
+				{error && (
+					<div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+						{error}
+					</div>
+				)}
 
+				<Card>
+					<CardHeader>
+						<CardTitle>Basic Information</CardTitle>
+					</CardHeader>
+					<CardContent>
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">
 								<Label htmlFor="universityId">University *</Label>
-								<Select
+								<SearchableSelect<UniversityAdminResponse>
 									value={universityId}
-									onValueChange={setUniversityId}
+									onChange={handleUniversityChange}
+									searchFn={adminApi.searchUniversities}
+									displayFn={(uni) => `${uni.name} - ${uni.country}`}
+									getIdFn={(uni) => uni.id}
+									placeholder="Search universities..."
+									recentStorageKey="leaply-recent-universities"
 									disabled={isLoading}
-								>
-									<SelectTrigger>
-										<SelectValue placeholder="Select university" />
-									</SelectTrigger>
-									<SelectContent>
-										{universities.map((uni) => (
-											<SelectItem key={uni.id} value={uni.id}>
-												{uni.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+									required
+									selectedDisplayValue={universityDisplay}
+								/>
 							</div>
 
 							<div className="space-y-2">
@@ -222,6 +268,26 @@ export default function NewProgramPage() {
 							</div>
 
 							<div className="space-y-2">
+								<Label>Study Types *</Label>
+								<div className="flex gap-4 mt-2">
+									{["Full-time", "Part-time"].map((type) => (
+										<label key={type} className="flex items-center gap-2">
+											<input
+												type="checkbox"
+												checked={studyTypes.includes(type)}
+												onChange={(e) =>
+													handleStudyTypeChange(type, e.target.checked)
+												}
+												disabled={isLoading}
+												className="rounded border-input"
+											/>
+											<span>{type}</span>
+										</label>
+									))}
+								</div>
+							</div>
+
+							<div className="space-y-2">
 								<Label htmlFor="language">Language</Label>
 								<Select
 									value={language}
@@ -239,7 +305,16 @@ export default function NewProgramPage() {
 									</SelectContent>
 								</Select>
 							</div>
+						</div>
+					</CardContent>
+				</Card>
 
+				<Card>
+					<CardHeader>
+						<CardTitle>Tuition & Fees</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">
 								<Label htmlFor="tuitionAnnualUsd">Annual Tuition (USD)</Label>
 								<Input
@@ -280,6 +355,75 @@ export default function NewProgramPage() {
 									</SelectContent>
 								</Select>
 							</div>
+						</div>
+					</CardContent>
+				</Card>
+
+				<Card>
+					<CardHeader>
+						<CardTitle>Admission Requirements</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div className="space-y-2 md:col-span-2">
+								<Label htmlFor="prerequisiteMajors">Prerequisite Majors</Label>
+								<div className="flex flex-wrap gap-2 mb-2">
+									{prerequisiteMajors.map((major) => (
+										<span
+											key={major}
+											className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-secondary text-secondary-foreground text-sm"
+										>
+											{major}
+											<button
+												type="button"
+												onClick={() => removePrerequisiteMajor(major)}
+												className="hover:text-destructive"
+											>
+												<X className="h-3 w-3" />
+											</button>
+										</span>
+									))}
+								</div>
+								<div className="flex gap-2">
+									<Input
+										id="prerequisiteMajors"
+										value={prerequisiteInput}
+										onChange={(e) => setPrerequisiteInput(e.target.value)}
+										onKeyDown={handlePrerequisiteKeyDown}
+										placeholder="Type and press Enter to add"
+										disabled={isLoading}
+									/>
+								</div>
+								<div className="flex flex-wrap gap-1 mt-2">
+									{PREREQUISITE_SUGGESTIONS.filter(
+										(s) => !prerequisiteMajors.includes(s),
+									).map((suggestion) => (
+										<button
+											key={suggestion}
+											type="button"
+											onClick={() => addPrerequisiteMajor(suggestion)}
+											className="px-2 py-0.5 text-xs rounded border border-input hover:bg-accent"
+										>
+											+ {suggestion}
+										</button>
+									))}
+								</div>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="minWorkExperienceYears">
+									Min Work Experience (years)
+								</Label>
+								<Input
+									id="minWorkExperienceYears"
+									type="number"
+									min={0}
+									value={minWorkExperienceYears}
+									onChange={(e) => setMinWorkExperienceYears(e.target.value)}
+									placeholder="Leave empty if not required"
+									disabled={isLoading}
+								/>
+							</div>
 
 							<div className="space-y-2">
 								<Label htmlFor="gpaMinimum">Minimum GPA</Label>
@@ -315,7 +459,16 @@ export default function NewProgramPage() {
 									disabled={isLoading}
 								/>
 							</div>
+						</div>
+					</CardContent>
+				</Card>
 
+				<Card>
+					<CardHeader>
+						<CardTitle>Additional Information</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="grid grid-cols-1 gap-4">
 							<div className="space-y-2">
 								<Label htmlFor="programUrl">Program URL</Label>
 								<Input
@@ -326,39 +479,44 @@ export default function NewProgramPage() {
 									disabled={isLoading}
 								/>
 							</div>
-						</div>
 
-						<div className="space-y-2">
-							<Label htmlFor="description">Description</Label>
-							<textarea
-								id="description"
-								value={description}
-								onChange={(e) => setDescription(e.target.value)}
-								disabled={isLoading}
-								className="w-full min-h-[100px] px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-							/>
+							<div className="space-y-2">
+								<Label htmlFor="description">Description</Label>
+								<textarea
+									id="description"
+									value={description}
+									onChange={(e) => setDescription(e.target.value)}
+									disabled={isLoading}
+									className="w-full min-h-[100px] px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+								/>
+							</div>
 						</div>
+					</CardContent>
+				</Card>
 
-						<div className="flex justify-end gap-4">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => router.back()}
-								disabled={isLoading}
-							>
-								Cancel
-							</Button>
-							<Button
-								type="submit"
-								disabled={isLoading || !universityId || !degreeType}
-							>
-								{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-								Create Program
-							</Button>
-						</div>
-					</form>
-				</CardContent>
-			</Card>
+				<div className="flex justify-end gap-4">
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => router.back()}
+						disabled={isLoading}
+					>
+						Cancel
+					</Button>
+					<Button
+						type="submit"
+						disabled={
+							isLoading ||
+							!universityId ||
+							!degreeType ||
+							studyTypes.length === 0
+						}
+					>
+						{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+						Create Program
+					</Button>
+				</div>
+			</form>
 		</div>
 	);
 }

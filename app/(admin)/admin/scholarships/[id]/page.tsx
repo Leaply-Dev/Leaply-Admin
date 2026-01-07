@@ -16,6 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminApi } from "@/lib/api/adminApi";
 import type {
@@ -59,7 +60,6 @@ export default function EditScholarshipPage() {
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [universities, setUniversities] = useState<UniversityAdminResponse[]>([]);
 
     // Basic Info
     const [name, setName] = useState("");
@@ -68,6 +68,7 @@ export default function EditScholarshipPage() {
     const [sourceType, setSourceType] = useState<ScholarshipSourceType>("university");
     const [sourceName, setSourceName] = useState("");
     const [universityId, setUniversityId] = useState("");
+    const [universityDisplay, setUniversityDisplay] = useState("");
     const [country, setCountry] = useState("");
 
     // Target & Scope
@@ -105,12 +106,7 @@ export default function EditScholarshipPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [scholarship, uniData] = await Promise.all([
-                    adminApi.getScholarship(id),
-                    adminApi.getUniversities({ size: 100 }),
-                ]);
-
-                setUniversities(uniData.content);
+                const scholarship = await adminApi.getScholarship(id);
 
                 // Populate form with existing data
                 setName(scholarship.name);
@@ -119,6 +115,10 @@ export default function EditScholarshipPage() {
                 setSourceType(scholarship.sourceType);
                 setSourceName(scholarship.sourceName || "");
                 setUniversityId(scholarship.universityId || "");
+                // Set display value for SearchableSelect
+                if (scholarship.universityName) {
+                    setUniversityDisplay(`${scholarship.universityName} - ${scholarship.country}`);
+                }
                 setCountry(scholarship.country);
 
                 setDegreeLevels(scholarship.degreeLevels);
@@ -155,6 +155,16 @@ export default function EditScholarshipPage() {
         };
         fetchData();
     }, [id]);
+
+    const handleUniversityChange = (idValue: string, item?: UniversityAdminResponse) => {
+        setUniversityId(idValue);
+        if (item) {
+            setUniversityDisplay(`${item.name} - ${item.country}`);
+            setCountry(item.country);
+        } else {
+            setUniversityDisplay("");
+        }
+    };
 
     const handleDegreeLevelChange = (level: ScholarshipDegreeLevel, checked: boolean) => {
         if (checked) {
@@ -341,22 +351,18 @@ export default function EditScholarshipPage() {
                                 <Label htmlFor="universityId">
                                     University {sourceType === "university" ? "*" : ""}
                                 </Label>
-                                <Select
+                                <SearchableSelect<UniversityAdminResponse>
                                     value={universityId}
-                                    onValueChange={setUniversityId}
+                                    onChange={handleUniversityChange}
+                                    searchFn={adminApi.searchUniversities}
+                                    displayFn={(uni) => `${uni.name} - ${uni.country}`}
+                                    getIdFn={(uni) => uni.id}
+                                    placeholder="Search universities..."
+                                    recentStorageKey="leaply-recent-universities"
                                     disabled={isLoading}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select university" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {universities.map((uni) => (
-                                            <SelectItem key={uni.id} value={uni.id}>
-                                                {uni.name} - {uni.country}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    required={sourceType === "university"}
+                                    selectedDisplayValue={universityDisplay}
+                                />
                             </div>
 
                             <div className="space-y-2">
