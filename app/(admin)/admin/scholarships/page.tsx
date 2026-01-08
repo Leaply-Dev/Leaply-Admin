@@ -50,16 +50,11 @@ const SOURCE_TYPE_LABELS: Record<ScholarshipSourceType, string> = {
     university: "University",
     government: "Government",
     foundation: "Foundation/NGO",
-    corporate: "Corporate",
-    bilateral: "Bilateral",
 };
 
 const COVERAGE_TYPE_LABELS: Record<ScholarshipCoverageType, string> = {
     full_funded: "Full Funded",
-    full_tuition: "Full Tuition",
-    partial_tuition: "Partial Tuition",
-    stipend_only: "Stipend Only",
-    other: "Other",
+    partial_funded: "Partial Funded",
 };
 
 const ELIGIBILITY_TYPE_LABELS: Record<ScholarshipEligibilityType, string> = {
@@ -209,8 +204,6 @@ export default function ScholarshipsPage() {
                         <SelectItem value="university">University</SelectItem>
                         <SelectItem value="government">Government</SelectItem>
                         <SelectItem value="foundation">Foundation</SelectItem>
-                        <SelectItem value="corporate">Corporate</SelectItem>
-                        <SelectItem value="bilateral">Bilateral</SelectItem>
                     </SelectContent>
                 </Select>
                 <Select value={coverageType} onValueChange={setCoverageType}>
@@ -220,10 +213,7 @@ export default function ScholarshipsPage() {
                     <SelectContent>
                         <SelectItem value="all">All Coverage</SelectItem>
                         <SelectItem value="full_funded">Full Funded</SelectItem>
-                        <SelectItem value="full_tuition">Full Tuition</SelectItem>
-                        <SelectItem value="partial_tuition">Partial Tuition</SelectItem>
-                        <SelectItem value="stipend_only">Stipend Only</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="partial_funded">Partial Funded</SelectItem>
                     </SelectContent>
                 </Select>
                 <Select value={eligibilityType} onValueChange={setEligibilityType}>
@@ -299,11 +289,11 @@ export default function ScholarshipsPage() {
                                         <TableCell>
                                             {scholarship.universityName || "-"}
                                         </TableCell>
-                                        <TableCell>{scholarship.country}</TableCell>
+                                        <TableCell>{scholarship.country || "-"}</TableCell>
                                         <TableCell>
                                             <Badge variant="outline">
                                                 {COVERAGE_TYPE_LABELS[scholarship.coverageType]}
-                                                {scholarship.coverageType === "partial_tuition" &&
+                                                {scholarship.coverageType === "partial_funded" &&
                                                     scholarship.coveragePercentage &&
                                                     ` (${scholarship.coveragePercentage}%)`}
                                             </Badge>

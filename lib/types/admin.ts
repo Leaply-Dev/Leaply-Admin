@@ -279,6 +279,7 @@ export interface ScholarshipAdminResponse {
 	description: string | null;
 	universityId: string | null;
 	universityName: string | null;
+	country: string | null;
 	sourceType: ScholarshipSourceType;
 	sourceName: string | null;
 	degreeLevels: ScholarshipDegreeLevel[];
