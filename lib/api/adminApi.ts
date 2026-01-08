@@ -1,6 +1,7 @@
 import type {
 	AuthResponse,
 	DashboardStatsResponse,
+	DropdownOptionsResponse,
 	ImportResultResponse,
 	IntakeAdminResponse,
 	IntakeCreateRequest,
@@ -46,6 +47,11 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
 // Stats
 export async function getStats(): Promise<DashboardStatsResponse> {
 	return apiClient.get<DashboardStatsResponse>("/v1/admin/stats");
+}
+
+// Dropdown Options
+export async function getDropdownOptions(): Promise<DropdownOptionsResponse> {
+	return apiClient.get<DropdownOptionsResponse>("/v1/admin/dropdown-options");
 }
 
 // Users
@@ -356,6 +362,7 @@ export async function downloadTemplate(
 export const adminApi = {
 	login,
 	getStats,
+	getDropdownOptions,
 	getUsers,
 	deleteUser,
 	updateUserRole,

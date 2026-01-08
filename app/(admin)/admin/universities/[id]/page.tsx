@@ -34,8 +34,11 @@ export default function EditUniversityPage() {
 	const [city, setCity] = useState("");
 	const [region, setRegion] = useState("");
 	const [type, setType] = useState("");
-	const [rankingQs, setRankingQs] = useState("");
-	const [rankingTimes, setRankingTimes] = useState("");
+	// Ranking ranges (min/max for QS and Times)
+	const [rankingQsMin, setRankingQsMin] = useState("");
+	const [rankingQsMax, setRankingQsMax] = useState("");
+	const [rankingTimesMin, setRankingTimesMin] = useState("");
+	const [rankingTimesMax, setRankingTimesMax] = useState("");
 	const [rankingNational, setRankingNational] = useState("");
 	const [primaryLanguage, setPrimaryLanguage] = useState("english");
 	const [logoUrl, setLogoUrl] = useState("");
@@ -52,8 +55,10 @@ export default function EditUniversityPage() {
 				setCity(data.city || "");
 				setRegion(data.region || "");
 				setType(data.type || "");
-				setRankingQs(data.rankingQs?.toString() || "");
-				setRankingTimes(data.rankingTimes?.toString() || "");
+				setRankingQsMin(data.rankingQsMin?.toString() || "");
+				setRankingQsMax(data.rankingQsMax?.toString() || "");
+				setRankingTimesMin(data.rankingTimesMin?.toString() || "");
+				setRankingTimesMax(data.rankingTimesMax?.toString() || "");
 				setRankingNational(data.rankingNational?.toString() || "");
 				setPrimaryLanguage(data.primaryLanguage || "english");
 				setLogoUrl(data.logoUrl || "");
@@ -83,10 +88,19 @@ export default function EditUniversityPage() {
 				city: city || undefined,
 				region: region || undefined,
 				type: type || undefined,
-				rankingQs: rankingQs ? Number.parseInt(rankingQs, 10) : undefined,
-				rankingTimes: rankingTimes
-					? Number.parseInt(rankingTimes, 10)
-					: undefined,
+				// Ranking ranges - if only min is provided, set max = min (exact value)
+				rankingQsMin: rankingQsMin ? Number.parseInt(rankingQsMin, 10) : undefined,
+				rankingQsMax: rankingQsMax
+					? Number.parseInt(rankingQsMax, 10)
+					: rankingQsMin
+						? Number.parseInt(rankingQsMin, 10)
+						: undefined,
+				rankingTimesMin: rankingTimesMin ? Number.parseInt(rankingTimesMin, 10) : undefined,
+				rankingTimesMax: rankingTimesMax
+					? Number.parseInt(rankingTimesMax, 10)
+					: rankingTimesMin
+						? Number.parseInt(rankingTimesMin, 10)
+						: undefined,
 				rankingNational: rankingNational
 					? Number.parseInt(rankingNational, 10)
 					: undefined,
@@ -229,26 +243,60 @@ export default function EditUniversityPage() {
 								</Select>
 							</div>
 
-							<div className="space-y-2">
-								<Label htmlFor="rankingQs">QS World Ranking</Label>
-								<Input
-									id="rankingQs"
-									type="number"
-									value={rankingQs}
-									onChange={(e) => setRankingQs(e.target.value)}
-									disabled={isLoading}
-								/>
+							<div className="space-y-2 md:col-span-2">
+								<Label>QS World Ranking</Label>
+								<div className="flex gap-2 items-center">
+									<Input
+										id="rankingQsMin"
+										type="number"
+										placeholder="Min (or exact)"
+										value={rankingQsMin}
+										onChange={(e) => setRankingQsMin(e.target.value)}
+										disabled={isLoading}
+										className="flex-1"
+									/>
+									<span className="text-muted-foreground">to</span>
+									<Input
+										id="rankingQsMax"
+										type="number"
+										placeholder="Max (optional)"
+										value={rankingQsMax}
+										onChange={(e) => setRankingQsMax(e.target.value)}
+										disabled={isLoading}
+										className="flex-1"
+									/>
+								</div>
+								<p className="text-xs text-muted-foreground">
+									Enter exact rank or range (e.g., 501-600)
+								</p>
 							</div>
 
-							<div className="space-y-2">
-								<Label htmlFor="rankingTimes">Times Higher Ed Ranking</Label>
-								<Input
-									id="rankingTimes"
-									type="number"
-									value={rankingTimes}
-									onChange={(e) => setRankingTimes(e.target.value)}
-									disabled={isLoading}
-								/>
+							<div className="space-y-2 md:col-span-2">
+								<Label>Times Higher Ed Ranking</Label>
+								<div className="flex gap-2 items-center">
+									<Input
+										id="rankingTimesMin"
+										type="number"
+										placeholder="Min (or exact)"
+										value={rankingTimesMin}
+										onChange={(e) => setRankingTimesMin(e.target.value)}
+										disabled={isLoading}
+										className="flex-1"
+									/>
+									<span className="text-muted-foreground">to</span>
+									<Input
+										id="rankingTimesMax"
+										type="number"
+										placeholder="Max (optional)"
+										value={rankingTimesMax}
+										onChange={(e) => setRankingTimesMax(e.target.value)}
+										disabled={isLoading}
+										className="flex-1"
+									/>
+								</div>
+								<p className="text-xs text-muted-foreground">
+									Enter exact rank or range (e.g., 501-600)
+								</p>
 							</div>
 
 							<div className="space-y-2">

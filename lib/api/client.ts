@@ -161,6 +161,18 @@ async function apiFetch<T>(
 
 			if (isDev) apiError.logDetails();
 
+			// Auto-redirect on 401 (token expired)
+			if (response.status === 401) {
+				try {
+					useAuthStore.getState().logout();
+				} catch (e) {
+					if (isDev) console.warn("Failed to logout from store", e);
+				}
+				if (typeof window !== "undefined") {
+					window.location.href = "/login?expired=true";
+				}
+			}
+
 			throw apiError;
 		}
 

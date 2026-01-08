@@ -3,7 +3,7 @@
 import { ArrowLeft, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,21 +20,34 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { adminApi } from "@/lib/api/adminApi";
 import type { UniversityAdminResponse } from "@/lib/types/admin";
 
-const PREREQUISITE_SUGGESTIONS = [
-	"Computer Science",
-	"Engineering",
-	"Mathematics",
-	"Business",
-	"Economics",
-	"Statistics",
-	"Physics",
-	"Any Bachelor's",
-];
+// Helper to format enum value to display label (e.g., "computer_science" -> "Computer Science")
+const formatEnumLabel = (value: string): string => {
+	return value
+		.split("_")
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(" ");
+};
 
 export default function NewProgramPage() {
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+
+	// Dropdown options from API
+	const [prerequisiteMajorOptions, setPrerequisiteMajorOptions] = useState<string[]>([]);
+
+	// Fetch dropdown options on mount
+	useEffect(() => {
+		const fetchOptions = async () => {
+			try {
+				const options = await adminApi.getDropdownOptions();
+				setPrerequisiteMajorOptions(options.prerequisiteMajors);
+			} catch (err) {
+				console.error("Failed to fetch dropdown options:", err);
+			}
+		};
+		fetchOptions();
+	}, []);
 
 	const [universityId, setUniversityId] = useState("");
 	const [universityDisplay, setUniversityDisplay] = useState("");
@@ -55,7 +68,6 @@ export default function NewProgramPage() {
 	const [description, setDescription] = useState("");
 	// New fields
 	const [prerequisiteMajors, setPrerequisiteMajors] = useState<string[]>([]);
-	const [prerequisiteInput, setPrerequisiteInput] = useState("");
 	const [minWorkExperienceYears, setMinWorkExperienceYears] = useState("");
 
 	const handleUniversityChange = (
@@ -78,24 +90,11 @@ export default function NewProgramPage() {
 		}
 	};
 
-	const addPrerequisiteMajor = (major: string) => {
-		const trimmed = major.trim();
-		if (trimmed && !prerequisiteMajors.includes(trimmed)) {
-			setPrerequisiteMajors([...prerequisiteMajors, trimmed]);
-		}
-		setPrerequisiteInput("");
-	};
-
-	const removePrerequisiteMajor = (major: string) => {
-		setPrerequisiteMajors(prerequisiteMajors.filter((m) => m !== major));
-	};
-
-	const handlePrerequisiteKeyDown = (
-		e: React.KeyboardEvent<HTMLInputElement>,
-	) => {
-		if (e.key === "Enter" || e.key === ",") {
-			e.preventDefault();
-			addPrerequisiteMajor(prerequisiteInput);
+	const handlePrerequisiteMajorChange = (major: string, checked: boolean) => {
+		if (checked) {
+			setPrerequisiteMajors([...prerequisiteMajors, major]);
+		} else {
+			setPrerequisiteMajors(prerequisiteMajors.filter((m) => m !== major));
 		}
 	};
 
@@ -366,48 +365,34 @@ export default function NewProgramPage() {
 					<CardContent>
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2 md:col-span-2">
-								<Label htmlFor="prerequisiteMajors">Prerequisite Majors</Label>
-								<div className="flex flex-wrap gap-2 mb-2">
-									{prerequisiteMajors.map((major) => (
-										<span
+								<Label>Prerequisite Majors</Label>
+								<p className="text-sm text-muted-foreground mb-2">
+									Select the required undergraduate majors for this program
+								</p>
+								<div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+									{prerequisiteMajorOptions.map((major) => (
+										<label
 											key={major}
-											className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-secondary text-secondary-foreground text-sm"
+											className="flex items-center gap-2 p-2 rounded border border-input hover:bg-accent cursor-pointer"
 										>
-											{major}
-											<button
-												type="button"
-												onClick={() => removePrerequisiteMajor(major)}
-												className="hover:text-destructive"
-											>
-												<X className="h-3 w-3" />
-											</button>
-										</span>
+											<input
+												type="checkbox"
+												checked={prerequisiteMajors.includes(major)}
+												onChange={(e) =>
+													handlePrerequisiteMajorChange(major, e.target.checked)
+												}
+												disabled={isLoading}
+												className="rounded border-input"
+											/>
+											<span className="text-sm">{formatEnumLabel(major)}</span>
+										</label>
 									))}
 								</div>
-								<div className="flex gap-2">
-									<Input
-										id="prerequisiteMajors"
-										value={prerequisiteInput}
-										onChange={(e) => setPrerequisiteInput(e.target.value)}
-										onKeyDown={handlePrerequisiteKeyDown}
-										placeholder="Type and press Enter to add"
-										disabled={isLoading}
-									/>
-								</div>
-								<div className="flex flex-wrap gap-1 mt-2">
-									{PREREQUISITE_SUGGESTIONS.filter(
-										(s) => !prerequisiteMajors.includes(s),
-									).map((suggestion) => (
-										<button
-											key={suggestion}
-											type="button"
-											onClick={() => addPrerequisiteMajor(suggestion)}
-											className="px-2 py-0.5 text-xs rounded border border-input hover:bg-accent"
-										>
-											+ {suggestion}
-										</button>
-									))}
-								</div>
+								{prerequisiteMajors.length > 0 && (
+									<p className="text-sm text-muted-foreground mt-2">
+										Selected: {prerequisiteMajors.map(formatEnumLabel).join(", ")}
+									</p>
+								)}
 							</div>
 
 							<div className="space-y-2">

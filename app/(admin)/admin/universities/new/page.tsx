@@ -3,7 +3,7 @@
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,11 +17,29 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { adminApi } from "@/lib/api/adminApi";
+import type { RegionOption } from "@/lib/types/admin";
 
 export default function NewUniversityPage() {
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+
+	// Dropdown options
+	const [regions, setRegions] = useState<RegionOption[]>([]);
+	const [countries, setCountries] = useState<string[]>([]);
+
+	// Fetch dropdown options on mount
+	useEffect(() => {
+		const fetchOptions = async () => {
+			try {
+				const options = await adminApi.getDropdownOptions();
+				setRegions(options.regions);
+			} catch (err) {
+				console.error("Failed to fetch dropdown options:", err);
+			}
+		};
+		fetchOptions();
+	}, []);
 
 	const [name, setName] = useState("");
 	const [nameLocal, setNameLocal] = useState("");
@@ -29,8 +47,11 @@ export default function NewUniversityPage() {
 	const [city, setCity] = useState("");
 	const [region, setRegion] = useState("");
 	const [type, setType] = useState("");
-	const [rankingQs, setRankingQs] = useState("");
-	const [rankingTimes, setRankingTimes] = useState("");
+	// Ranking ranges (min/max for QS and Times)
+	const [rankingQsMin, setRankingQsMin] = useState("");
+	const [rankingQsMax, setRankingQsMax] = useState("");
+	const [rankingTimesMin, setRankingTimesMin] = useState("");
+	const [rankingTimesMax, setRankingTimesMax] = useState("");
 	const [rankingNational, setRankingNational] = useState("");
 	const [primaryLanguage, setPrimaryLanguage] = useState("english");
 	const [logoUrl, setLogoUrl] = useState("");
@@ -50,10 +71,19 @@ export default function NewUniversityPage() {
 				city: city || undefined,
 				region: region || undefined,
 				type: type || undefined,
-				rankingQs: rankingQs ? Number.parseInt(rankingQs, 10) : undefined,
-				rankingTimes: rankingTimes
-					? Number.parseInt(rankingTimes, 10)
-					: undefined,
+				// Ranking ranges - if only min is provided, set max = min (exact value)
+				rankingQsMin: rankingQsMin ? Number.parseInt(rankingQsMin, 10) : undefined,
+				rankingQsMax: rankingQsMax
+					? Number.parseInt(rankingQsMax, 10)
+					: rankingQsMin
+						? Number.parseInt(rankingQsMin, 10)
+						: undefined,
+				rankingTimesMin: rankingTimesMin ? Number.parseInt(rankingTimesMin, 10) : undefined,
+				rankingTimesMax: rankingTimesMax
+					? Number.parseInt(rankingTimesMax, 10)
+					: rankingTimesMin
+						? Number.parseInt(rankingTimesMin, 10)
+						: undefined,
 				rankingNational: rankingNational
 					? Number.parseInt(rankingNational, 10)
 					: undefined,
@@ -121,14 +151,48 @@ export default function NewUniversityPage() {
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="country">Country *</Label>
-								<Input
-									id="country"
-									value={country}
-									onChange={(e) => setCountry(e.target.value)}
-									required
+								<Label htmlFor="region">Region</Label>
+								<Select
+									value={region}
+									onValueChange={(val) => {
+										setRegion(val);
+										setCountry(""); // Reset country when region changes
+										const selectedRegion = regions.find(r => r.value === val);
+										setCountries(selectedRegion?.countries || []);
+									}}
 									disabled={isLoading}
-								/>
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select region" />
+									</SelectTrigger>
+									<SelectContent>
+										{regions.map((r) => (
+											<SelectItem key={r.value} value={r.value}>
+												{r.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="country">Country *</Label>
+								<Select
+									value={country}
+									onValueChange={setCountry}
+									disabled={isLoading || countries.length === 0}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder={region ? "Select country" : "Select region first"} />
+									</SelectTrigger>
+									<SelectContent>
+										{countries.map((c) => (
+											<SelectItem key={c} value={c}>
+												{c}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 							</div>
 
 							<div className="space-y-2">
@@ -137,16 +201,6 @@ export default function NewUniversityPage() {
 									id="city"
 									value={city}
 									onChange={(e) => setCity(e.target.value)}
-									disabled={isLoading}
-								/>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="region">Region</Label>
-								<Input
-									id="region"
-									value={region}
-									onChange={(e) => setRegion(e.target.value)}
 									disabled={isLoading}
 								/>
 							</div>
@@ -168,26 +222,60 @@ export default function NewUniversityPage() {
 								</Select>
 							</div>
 
-							<div className="space-y-2">
-								<Label htmlFor="rankingQs">QS World Ranking</Label>
-								<Input
-									id="rankingQs"
-									type="number"
-									value={rankingQs}
-									onChange={(e) => setRankingQs(e.target.value)}
-									disabled={isLoading}
-								/>
+							<div className="space-y-2 md:col-span-2">
+								<Label>QS World Ranking</Label>
+								<div className="flex gap-2 items-center">
+									<Input
+										id="rankingQsMin"
+										type="number"
+										placeholder="Min (or exact)"
+										value={rankingQsMin}
+										onChange={(e) => setRankingQsMin(e.target.value)}
+										disabled={isLoading}
+										className="flex-1"
+									/>
+									<span className="text-muted-foreground">to</span>
+									<Input
+										id="rankingQsMax"
+										type="number"
+										placeholder="Max (optional)"
+										value={rankingQsMax}
+										onChange={(e) => setRankingQsMax(e.target.value)}
+										disabled={isLoading}
+										className="flex-1"
+									/>
+								</div>
+								<p className="text-xs text-muted-foreground">
+									Enter exact rank or range (e.g., 501-600)
+								</p>
 							</div>
 
-							<div className="space-y-2">
-								<Label htmlFor="rankingTimes">Times Higher Ed Ranking</Label>
-								<Input
-									id="rankingTimes"
-									type="number"
-									value={rankingTimes}
-									onChange={(e) => setRankingTimes(e.target.value)}
-									disabled={isLoading}
-								/>
+							<div className="space-y-2 md:col-span-2">
+								<Label>Times Higher Ed Ranking</Label>
+								<div className="flex gap-2 items-center">
+									<Input
+										id="rankingTimesMin"
+										type="number"
+										placeholder="Min (or exact)"
+										value={rankingTimesMin}
+										onChange={(e) => setRankingTimesMin(e.target.value)}
+										disabled={isLoading}
+										className="flex-1"
+									/>
+									<span className="text-muted-foreground">to</span>
+									<Input
+										id="rankingTimesMax"
+										type="number"
+										placeholder="Max (optional)"
+										value={rankingTimesMax}
+										onChange={(e) => setRankingTimesMax(e.target.value)}
+										disabled={isLoading}
+										className="flex-1"
+									/>
+								</div>
+								<p className="text-xs text-muted-foreground">
+									Enter exact rank or range (e.g., 501-600)
+								</p>
 							</div>
 
 							<div className="space-y-2">

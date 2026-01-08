@@ -64,8 +64,13 @@ export interface UniversityAdminResponse {
 	city: string | null;
 	region: string | null;
 	type: string | null;
-	rankingQs: number | null;
-	rankingTimes: number | null;
+	// Ranking ranges (min/max for QS and Times, single value for National)
+	rankingQsMin: number | null;
+	rankingQsMax: number | null;
+	rankingQsDisplay: string | null;  // "150" or "501-600"
+	rankingTimesMin: number | null;
+	rankingTimesMax: number | null;
+	rankingTimesDisplay: string | null;  // "150" or "501-600"
 	rankingNational: number | null;
 	primaryLanguage: string;
 	logoUrl: string | null;
@@ -85,8 +90,11 @@ export interface UniversityCreateRequest {
 	city?: string;
 	region?: string;
 	type?: string;
-	rankingQs?: number;
-	rankingTimes?: number;
+	// Ranking ranges (min/max for QS and Times, single value for National)
+	rankingQsMin?: number;
+	rankingQsMax?: number;
+	rankingTimesMin?: number;
+	rankingTimesMax?: number;
 	rankingNational?: number;
 	primaryLanguage?: string;
 	logoUrl?: string;
@@ -392,4 +400,28 @@ export interface ProgramListParams {
 export interface IntakeListParams {
 	page?: number;
 	size?: number;
+}
+
+// Dropdown Options (for admin forms)
+export interface RegionOption {
+	value: string;
+	label: string;
+	labelVi: string;
+	countries: string[];
+}
+
+export interface DropdownOptionsResponse {
+	regions: RegionOption[];
+	universityTypes: string[];
+	primaryLanguages: string[];
+	degreeTypes: string[];
+	deliveryModes: string[];
+	majorCategories: string[];
+	prerequisiteMajors: string[];
+	scholarshipSourceTypes: string[];
+	scholarshipCoverageTypes: string[];
+	scholarshipEligibilityTypes: string[];
+	scholarshipCoverageDurations: string[];
+	scholarshipDegreeLevels: string[];
+	requiredDocuments: string[];
 }

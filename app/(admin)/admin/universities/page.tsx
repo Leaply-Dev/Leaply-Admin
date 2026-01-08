@@ -163,7 +163,7 @@ export default function UniversitiesPage() {
 										{university.programCount}
 									</TableCell>
 									<TableCell className="text-center">
-										{university.rankingQs || "-"}
+										{university.rankingQsDisplay || "-"}
 									</TableCell>
 									<TableCell>
 										<DropdownMenu>
