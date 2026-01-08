@@ -3,7 +3,7 @@
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +27,8 @@ import type {
     ScholarshipSourceType,
     RequiredDocument,
     UniversityAdminResponse,
+    RegionOption,
+    CountryOption,
 } from "@/lib/types/admin";
 
 const MAJOR_CATEGORIES = [
@@ -56,6 +58,10 @@ export default function NewScholarshipPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Dropdown options
+    const [regions, setRegions] = useState<RegionOption[]>([]);
+    const [countries, setCountries] = useState<CountryOption[]>([]);
+
     // Basic Info
     const [name, setName] = useState("");
     const [url, setUrl] = useState("");
@@ -64,7 +70,27 @@ export default function NewScholarshipPage() {
     const [sourceName, setSourceName] = useState("");
     const [universityId, setUniversityId] = useState("");
     const [universityDisplay, setUniversityDisplay] = useState("");
+    const [region, setRegion] = useState("");
     const [country, setCountry] = useState("");
+
+    // Fetch dropdown options
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                const options = await adminApi.getDropdownOptions();
+                setRegions(options.regions);
+                setCountries(options.countries);
+            } catch (err) {
+                console.error("Failed to fetch dropdown options:", err);
+            }
+        };
+        fetchOptions();
+    }, []);
+
+    // Get filtered countries based on selected region
+    const filteredCountries = region
+        ? countries.filter((c) => c.region === region)
+        : countries;
 
     // Target & Scope
     const [degreeLevels, setDegreeLevels] = useState<ScholarshipDegreeLevel[]>(["master"]);
@@ -102,10 +128,22 @@ export default function NewScholarshipPage() {
         setUniversityId(id);
         if (item) {
             setUniversityDisplay(`${item.name} - ${item.country}`);
-            setCountry(item.country);
+            // Find the country option to get its region
+            const countryOption = countries.find((c) => c.value === item.country);
+            if (countryOption) {
+                setRegion(countryOption.region);
+                setCountry(countryOption.value);
+            } else {
+                setCountry(item.country);
+            }
         } else {
             setUniversityDisplay("");
         }
+    };
+
+    const handleRegionChange = (value: string) => {
+        setRegion(value);
+        setCountry(""); // Reset country when region changes
     };
 
     const handleDegreeLevelChange = (level: ScholarshipDegreeLevel, checked: boolean) => {
@@ -279,14 +317,43 @@ export default function NewScholarshipPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="country">Country *</Label>
-                                <Input
-                                    id="country"
-                                    value={country}
-                                    onChange={(e) => setCountry(e.target.value)}
-                                    required
+                                <Label htmlFor="region">Region</Label>
+                                <Select
+                                    value={region}
+                                    onValueChange={handleRegionChange}
                                     disabled={isLoading}
-                                />
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select region" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {regions.map((r) => (
+                                            <SelectItem key={r.value} value={r.value}>
+                                                {r.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="country">Country *</Label>
+                                <Select
+                                    value={country}
+                                    onValueChange={setCountry}
+                                    disabled={isLoading}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select country" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {filteredCountries.map((c) => (
+                                            <SelectItem key={c.value} value={c.value}>
+                                                {c.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div className="space-y-2 md:col-span-2">
@@ -489,12 +556,11 @@ export default function NewScholarshipPage() {
                                     <SelectContent>
                                         <SelectItem value="merit">Merit-based</SelectItem>
                                         <SelectItem value="need_based">Need-based</SelectItem>
-                                        <SelectItem value="hybrid">Hybrid</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
-                            {(eligibilityType === "merit" || eligibilityType === "hybrid") && (
+                            {eligibilityType === "merit" && (
                                 <div className="space-y-2">
                                     <Label htmlFor="eligibilityFocus">Eligibility Focus</Label>
                                     <Select

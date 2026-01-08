@@ -65,7 +65,6 @@ const COVERAGE_TYPE_LABELS: Record<ScholarshipCoverageType, string> = {
 const ELIGIBILITY_TYPE_LABELS: Record<ScholarshipEligibilityType, string> = {
     merit: "Merit-based",
     need_based: "Need-based",
-    hybrid: "Hybrid",
 };
 
 type ScholarshipStatus = "active" | "expiring_soon" | "expired" | "inactive";
@@ -235,7 +234,6 @@ export default function ScholarshipsPage() {
                         <SelectItem value="all">All Types</SelectItem>
                         <SelectItem value="merit">Merit-based</SelectItem>
                         <SelectItem value="need_based">Need-based</SelectItem>
-                        <SelectItem value="hybrid">Hybrid</SelectItem>
                     </SelectContent>
                 </Select>
                 <Select value={isActive} onValueChange={setIsActive}>

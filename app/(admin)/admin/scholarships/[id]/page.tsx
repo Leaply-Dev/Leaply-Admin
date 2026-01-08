@@ -28,6 +28,8 @@ import type {
     ScholarshipSourceType,
     RequiredDocument,
     UniversityAdminResponse,
+    RegionOption,
+    CountryOption,
 } from "@/lib/types/admin";
 
 const MAJOR_CATEGORIES = [
@@ -61,6 +63,10 @@ export default function EditScholarshipPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Dropdown options
+    const [regions, setRegions] = useState<RegionOption[]>([]);
+    const [countries, setCountries] = useState<CountryOption[]>([]);
+
     // Basic Info
     const [name, setName] = useState("");
     const [url, setUrl] = useState("");
@@ -69,6 +75,7 @@ export default function EditScholarshipPage() {
     const [sourceName, setSourceName] = useState("");
     const [universityId, setUniversityId] = useState("");
     const [universityDisplay, setUniversityDisplay] = useState("");
+    const [region, setRegion] = useState("");
     const [country, setCountry] = useState("");
 
     // Target & Scope
@@ -103,9 +110,19 @@ export default function EditScholarshipPage() {
     const [isActive, setIsActive] = useState(true);
     const [notes, setNotes] = useState("");
 
+    // Get filtered countries based on selected region
+    const filteredCountries = region
+        ? countries.filter((c) => c.region === region)
+        : countries;
+
     useEffect(() => {
         const fetchData = async () => {
             try {
+                // Fetch dropdown options first
+                const options = await adminApi.getDropdownOptions();
+                setRegions(options.regions);
+                setCountries(options.countries);
+
                 const scholarship = await adminApi.getScholarship(id);
 
                 // Populate form with existing data
@@ -119,7 +136,13 @@ export default function EditScholarshipPage() {
                 if (scholarship.universityName) {
                     setUniversityDisplay(`${scholarship.universityName} - ${scholarship.country}`);
                 }
-                setCountry(scholarship.country);
+                // Set country and find its region
+                const countryVal = scholarship.country;
+                setCountry(countryVal);
+                const countryOption = options.countries.find((c: CountryOption) => c.value === countryVal);
+                if (countryOption) {
+                    setRegion(countryOption.region);
+                }
 
                 setDegreeLevels(scholarship.degreeLevels);
                 setAllFieldsEligible(!scholarship.eligibleFields);
@@ -160,10 +183,22 @@ export default function EditScholarshipPage() {
         setUniversityId(idValue);
         if (item) {
             setUniversityDisplay(`${item.name} - ${item.country}`);
-            setCountry(item.country);
+            // Find the country option to get its region
+            const countryOption = countries.find((c) => c.value === item.country);
+            if (countryOption) {
+                setRegion(countryOption.region);
+                setCountry(countryOption.value);
+            } else {
+                setCountry(item.country);
+            }
         } else {
             setUniversityDisplay("");
         }
+    };
+
+    const handleRegionChange = (value: string) => {
+        setRegion(value);
+        setCountry(""); // Reset country when region changes
     };
 
     const handleDegreeLevelChange = (level: ScholarshipDegreeLevel, checked: boolean) => {
@@ -366,14 +401,43 @@ export default function EditScholarshipPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="country">Country *</Label>
-                                <Input
-                                    id="country"
-                                    value={country}
-                                    onChange={(e) => setCountry(e.target.value)}
-                                    required
+                                <Label htmlFor="region">Region</Label>
+                                <Select
+                                    value={region}
+                                    onValueChange={handleRegionChange}
                                     disabled={isLoading}
-                                />
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select region" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {regions.map((r) => (
+                                            <SelectItem key={r.value} value={r.value}>
+                                                {r.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="country">Country *</Label>
+                                <Select
+                                    value={country}
+                                    onValueChange={setCountry}
+                                    disabled={isLoading}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select country" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {filteredCountries.map((c) => (
+                                            <SelectItem key={c.value} value={c.value}>
+                                                {c.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div className="space-y-2 md:col-span-2">
@@ -576,12 +640,11 @@ export default function EditScholarshipPage() {
                                     <SelectContent>
                                         <SelectItem value="merit">Merit-based</SelectItem>
                                         <SelectItem value="need_based">Need-based</SelectItem>
-                                        <SelectItem value="hybrid">Hybrid</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
-                            {(eligibilityType === "merit" || eligibilityType === "hybrid") && (
+                            {eligibilityType === "merit" && (
                                 <div className="space-y-2">
                                     <Label htmlFor="eligibilityFocus">Eligibility Focus</Label>
                                     <Select

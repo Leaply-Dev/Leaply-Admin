@@ -241,7 +241,7 @@ export type ScholarshipCoverageDuration =
 	| "full_program"
 	| "one_time";
 
-export type ScholarshipEligibilityType = "merit" | "need_based" | "hybrid";
+export type ScholarshipEligibilityType = "merit" | "need_based";
 
 export type ScholarshipEligibilityFocus =
 	| "academic"
@@ -407,11 +407,19 @@ export interface RegionOption {
 	value: string;
 	label: string;
 	labelVi: string;
-	countries: string[];
+	countries: string[];  // Country values for this region
+}
+
+export interface CountryOption {
+	value: string;
+	label: string;
+	labelVi: string;
+	region: string;  // Region value this country belongs to
 }
 
 export interface DropdownOptionsResponse {
 	regions: RegionOption[];
+	countries: CountryOption[];
 	universityTypes: string[];
 	primaryLanguages: string[];
 	degreeTypes: string[];
