@@ -67,6 +67,14 @@ export async function deleteUser(id: string): Promise<void> {
 	return apiClient.delete(`/v1/admin/users/${id}`);
 }
 
+export async function restoreUser(id: string): Promise<void> {
+	return apiClient.post(`/v1/admin/users/${id}/restore`, {});
+}
+
+export async function hardDeleteUser(id: string): Promise<void> {
+	return apiClient.delete(`/v1/admin/users/${id}/permanent`);
+}
+
 export async function updateUserRole(
 	id: string,
 	data: UserRoleUpdateRequest,
@@ -365,6 +373,8 @@ export const adminApi = {
 	getDropdownOptions,
 	getUsers,
 	deleteUser,
+	restoreUser,
+	hardDeleteUser,
 	updateUserRole,
 	getUniversities,
 	searchUniversities,

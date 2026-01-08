@@ -6,6 +6,7 @@ import {
 	type ColumnFiltersState,
 	type SortingState,
 	type VisibilityState,
+	type OnChangeFn,
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
@@ -26,27 +27,38 @@ import {
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
+	// Optional server-side sorting support
+	sorting?: SortingState;
+	onSortingChange?: OnChangeFn<SortingState>;
 }
 
 export function DataTable<TData, TValue>({
 	columns,
 	data,
+	sorting: externalSorting,
+	onSortingChange: externalOnSortingChange,
 }: DataTableProps<TData, TValue>) {
-	const [sorting, setSorting] = React.useState<SortingState>([]);
+	const [internalSorting, setInternalSorting] = React.useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
 		[],
 	);
 	const [columnVisibility, setColumnVisibility] =
 		React.useState<VisibilityState>({});
 
+	// Use external sorting state if provided (server-side), otherwise use internal state (client-side)
+	const isServerSide = externalSorting !== undefined && externalOnSortingChange !== undefined;
+	const sorting = isServerSide ? externalSorting : internalSorting;
+	const onSortingChange = isServerSide ? externalOnSortingChange : setInternalSorting;
+
 	const table = useReactTable({
 		data,
 		columns,
-		onSortingChange: setSorting,
+		onSortingChange,
 		onColumnFiltersChange: setColumnFilters,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel(),
+		// Only use client-side sorting model when not using server-side sorting
+		...(isServerSide ? { manualSorting: true } : { getSortedRowModel: getSortedRowModel() }),
 		getFilteredRowModel: getFilteredRowModel(),
 		onColumnVisibilityChange: setColumnVisibility,
 		state: {

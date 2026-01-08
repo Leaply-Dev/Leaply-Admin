@@ -49,6 +49,7 @@ export interface UserAdminResponse {
 	profileCompletion: number;
 	lastActiveAt: string | null;
 	createdAt: string;
+	deletedAt: string | null;
 }
 
 export interface UserRoleUpdateRequest {
@@ -380,6 +381,8 @@ export interface UserListParams {
 	size?: number;
 	search?: string;
 	role?: string;
+	sort?: string;
+	showDeleted?: boolean;
 }
 
 export interface UniversityListParams {
