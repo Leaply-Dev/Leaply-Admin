@@ -30,6 +30,8 @@ interface DataTableProps<TData, TValue> {
 	// Optional server-side sorting support
 	sorting?: SortingState;
 	onSortingChange?: OnChangeFn<SortingState>;
+	// When true, disables client-side pagination (use with server-side pagination)
+	manualPagination?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -37,6 +39,7 @@ export function DataTable<TData, TValue>({
 	data,
 	sorting: externalSorting,
 	onSortingChange: externalOnSortingChange,
+	manualPagination = false,
 }: DataTableProps<TData, TValue>) {
 	const [internalSorting, setInternalSorting] = React.useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -56,7 +59,8 @@ export function DataTable<TData, TValue>({
 		onSortingChange,
 		onColumnFiltersChange: setColumnFilters,
 		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
+		// Only use client-side pagination when not using server-side pagination
+		...(manualPagination ? { manualPagination: true } : { getPaginationRowModel: getPaginationRowModel() }),
 		// Only use client-side sorting model when not using server-side sorting
 		...(isServerSide ? { manualSorting: true } : { getSortedRowModel: getSortedRowModel() }),
 		getFilteredRowModel: getFilteredRowModel(),

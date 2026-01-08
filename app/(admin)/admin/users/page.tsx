@@ -206,6 +206,7 @@ export default function UsersPage() {
 					data={users}
 					sorting={sorting}
 					onSortingChange={setSorting}
+					manualPagination
 				/>
 			)}
 
