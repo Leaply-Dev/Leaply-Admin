@@ -141,6 +141,8 @@ export interface ProgramAdminResponse {
 	} | null;
 	programUrl: string | null;
 	admissionsUrl: string | null;
+	englishProficiencyRequirement: string | null;
+	admissionRequirement: string | null;
 	intakeCount: number;
 	createdAt: string;
 	updatedAt: string;
@@ -181,6 +183,8 @@ export interface ProgramCreateRequest {
 	};
 	programUrl?: string;
 	admissionsUrl?: string;
+	englishProficiencyRequirement?: string;
+	admissionRequirement?: string;
 }
 
 export type ProgramUpdateRequest = Partial<
@@ -225,22 +229,18 @@ export type IntakeUpdateRequest = Partial<IntakeCreateRequest>;
 export type ScholarshipSourceType =
 	| "university"
 	| "government"
-	| "foundation"
-	| "corporate"
-	| "bilateral";
+	| "foundation";
 
 export type ScholarshipCoverageType =
 	| "full_funded"
-	| "full_tuition"
-	| "partial_tuition"
-	| "stipend_only"
-	| "other";
+	| "partial_funded";
 
 export type ScholarshipCoverageDuration =
 	| "first_year"
 	| "annual_renewable"
 	| "full_program"
-	| "one_time";
+	| "one_time"
+	| "not_specified";
 
 export type ScholarshipEligibilityType = "merit" | "need_based";
 
@@ -279,7 +279,6 @@ export interface ScholarshipAdminResponse {
 	description: string | null;
 	universityId: string | null;
 	universityName: string | null;
-	country: string;
 	sourceType: ScholarshipSourceType;
 	sourceName: string | null;
 	degreeLevels: ScholarshipDegreeLevel[];
@@ -301,6 +300,9 @@ export interface ScholarshipAdminResponse {
 	requiredDocuments: RequiredDocument[];
 	nationalityEligible: string[] | null;
 	otherRequirements: string | null;
+	englishProficiencyRequirement: string | null;
+	applyWithProgram: boolean;
+	programApplicationUrl: string | null;
 	applicationOpenDate: string | null;
 	applicationDeadline: string | null;
 	intakeSeasons: string[];
@@ -319,7 +321,6 @@ export interface ScholarshipCreateRequest {
 	url?: string;
 	description?: string;
 	universityId?: string;
-	country?: string;
 	sourceType?: ScholarshipSourceType;
 	sourceName?: string;
 	degreeLevels: ScholarshipDegreeLevel[];
@@ -341,6 +342,9 @@ export interface ScholarshipCreateRequest {
 	requiredDocuments?: RequiredDocument[];
 	nationalityEligible?: string[];
 	otherRequirements?: string;
+	englishProficiencyRequirement?: string;
+	applyWithProgram?: boolean;
+	programApplicationUrl?: string;
 	applicationOpenDate?: string;
 	applicationDeadline?: string;
 	intakeSeasons?: string[];
@@ -356,7 +360,6 @@ export interface ScholarshipListParams {
 	size?: number;
 	search?: string;
 	universityId?: string;
-	country?: string;
 	sourceType?: ScholarshipSourceType;
 	coverageType?: ScholarshipCoverageType;
 	eligibilityType?: ScholarshipEligibilityType;

@@ -27,8 +27,6 @@ import type {
     ScholarshipSourceType,
     RequiredDocument,
     UniversityAdminResponse,
-    RegionOption,
-    CountryOption,
 } from "@/lib/types/admin";
 
 const MAJOR_CATEGORIES = [
@@ -58,10 +56,6 @@ export default function NewScholarshipPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Dropdown options
-    const [regions, setRegions] = useState<RegionOption[]>([]);
-    const [countries, setCountries] = useState<CountryOption[]>([]);
-
     // Basic Info
     const [name, setName] = useState("");
     const [url, setUrl] = useState("");
@@ -70,27 +64,6 @@ export default function NewScholarshipPage() {
     const [sourceName, setSourceName] = useState("");
     const [universityId, setUniversityId] = useState("");
     const [universityDisplay, setUniversityDisplay] = useState("");
-    const [region, setRegion] = useState("");
-    const [country, setCountry] = useState("");
-
-    // Fetch dropdown options
-    useEffect(() => {
-        const fetchOptions = async () => {
-            try {
-                const options = await adminApi.getDropdownOptions();
-                setRegions(options.regions);
-                setCountries(options.countries);
-            } catch (err) {
-                console.error("Failed to fetch dropdown options:", err);
-            }
-        };
-        fetchOptions();
-    }, []);
-
-    // Get filtered countries based on selected region
-    const filteredCountries = region
-        ? countries.filter((c) => c.region === region)
-        : countries;
 
     // Target & Scope
     const [degreeLevels, setDegreeLevels] = useState<ScholarshipDegreeLevel[]>(["master"]);
@@ -114,6 +87,9 @@ export default function NewScholarshipPage() {
     const [workExperienceRequired, setWorkExperienceRequired] = useState(false);
     const [minWorkExperienceYears, setMinWorkExperienceYears] = useState("");
     const [requiredDocuments, setRequiredDocuments] = useState<RequiredDocument[]>([]);
+    const [englishProficiencyRequirement, setEnglishProficiencyRequirement] = useState("");
+    const [applyWithProgram, setApplyWithProgram] = useState(false);
+    const [programApplicationUrl, setProgramApplicationUrl] = useState("");
 
     // Timeline
     const [applicationOpenDate, setApplicationOpenDate] = useState("");
@@ -128,22 +104,9 @@ export default function NewScholarshipPage() {
         setUniversityId(id);
         if (item) {
             setUniversityDisplay(`${item.name} - ${item.country}`);
-            // Find the country option to get its region
-            const countryOption = countries.find((c) => c.value === item.country);
-            if (countryOption) {
-                setRegion(countryOption.region);
-                setCountry(countryOption.value);
-            } else {
-                setCountry(item.country);
-            }
         } else {
             setUniversityDisplay("");
         }
-    };
-
-    const handleRegionChange = (value: string) => {
-        setRegion(value);
-        setCountry(""); // Reset country when region changes
     };
 
     const handleDegreeLevelChange = (level: ScholarshipDegreeLevel, checked: boolean) => {
@@ -181,7 +144,6 @@ export default function NewScholarshipPage() {
                 url: url || undefined,
                 description: description || undefined,
                 universityId: universityId || undefined,
-                country: country || undefined,
                 sourceType,
                 sourceName: sourceName || undefined,
                 degreeLevels,
@@ -202,6 +164,9 @@ export default function NewScholarshipPage() {
                     ? Number(minWorkExperienceYears)
                     : undefined,
                 requiredDocuments: requiredDocuments.length > 0 ? requiredDocuments : undefined,
+                englishProficiencyRequirement: englishProficiencyRequirement || undefined,
+                applyWithProgram,
+                programApplicationUrl: programApplicationUrl || undefined,
                 applicationOpenDate: applicationOpenDate || undefined,
                 applicationDeadline: applicationDeadline || undefined,
                 isActive,
@@ -280,9 +245,7 @@ export default function NewScholarshipPage() {
                                     <SelectContent>
                                         <SelectItem value="university">University</SelectItem>
                                         <SelectItem value="government">Government</SelectItem>
-                                        <SelectItem value="foundation">Foundation/NGO</SelectItem>
-                                        <SelectItem value="corporate">Corporate</SelectItem>
-                                        <SelectItem value="bilateral">Bilateral Agreement</SelectItem>
+                                        <SelectItem value="foundation">Foundation</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -314,46 +277,6 @@ export default function NewScholarshipPage() {
                                     required={sourceType === "university"}
                                     selectedDisplayValue={universityDisplay}
                                 />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="region">Region</Label>
-                                <Select
-                                    value={region}
-                                    onValueChange={handleRegionChange}
-                                    disabled={isLoading}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select region" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {regions.map((r) => (
-                                            <SelectItem key={r.value} value={r.value}>
-                                                {r.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="country">Country *</Label>
-                                <Select
-                                    value={country}
-                                    onValueChange={setCountry}
-                                    disabled={isLoading}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select country" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {filteredCountries.map((c) => (
-                                            <SelectItem key={c.value} value={c.value}>
-                                                {c.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
                             </div>
 
                             <div className="space-y-2 md:col-span-2">
@@ -449,13 +372,8 @@ export default function NewScholarshipPage() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="full_funded">
-                                            Full Funded (Tuition + Living)
-                                        </SelectItem>
-                                        <SelectItem value="full_tuition">Full Tuition Only</SelectItem>
-                                        <SelectItem value="partial_tuition">Partial Tuition</SelectItem>
-                                        <SelectItem value="stipend_only">Stipend Only</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
+                                        <SelectItem value="full_funded">Fully Funded</SelectItem>
+                                        <SelectItem value="partial_funded">Partially Funded</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -479,11 +397,12 @@ export default function NewScholarshipPage() {
                                         </SelectItem>
                                         <SelectItem value="full_program">Full Program</SelectItem>
                                         <SelectItem value="one_time">One-time Grant</SelectItem>
+                                        <SelectItem value="not_specified">Not Specified</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
-                            {coverageType === "partial_tuition" && (
+                            {coverageType === "partial_funded" && (
                                 <div className="space-y-2">
                                     <Label htmlFor="coveragePercentage">Coverage Percentage</Label>
                                     <Input
@@ -689,6 +608,43 @@ export default function NewScholarshipPage() {
                                         </label>
                                     ))}
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="englishProficiencyRequirement">English Proficiency Requirement</Label>
+                                <Input
+                                    id="englishProficiencyRequirement"
+                                    value={englishProficiencyRequirement}
+                                    onChange={(e) => setEnglishProficiencyRequirement(e.target.value)}
+                                    placeholder="e.g., B1, C1 in English"
+                                    disabled={isLoading}
+                                />
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                                <label className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={applyWithProgram}
+                                        onChange={(e) => setApplyWithProgram(e.target.checked)}
+                                        disabled={isLoading}
+                                        className="rounded border-input"
+                                    />
+                                    <span>Apply with a program</span>
+                                </label>
+                                {applyWithProgram && (
+                                    <div className="ml-6 mt-2">
+                                        <Label htmlFor="programApplicationUrl">Program Application URL</Label>
+                                        <Input
+                                            id="programApplicationUrl"
+                                            type="url"
+                                            value={programApplicationUrl}
+                                            onChange={(e) => setProgramApplicationUrl(e.target.value)}
+                                            placeholder="https://..."
+                                            disabled={isLoading}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </CardContent>

@@ -69,6 +69,8 @@ export default function NewProgramPage() {
 	// New fields
 	const [prerequisiteMajors, setPrerequisiteMajors] = useState<string[]>([]);
 	const [minWorkExperienceYears, setMinWorkExperienceYears] = useState("");
+	const [englishProficiencyRequirement, setEnglishProficiencyRequirement] = useState("");
+	const [admissionRequirement, setAdmissionRequirement] = useState("");
 
 	const handleUniversityChange = (
 		id: string,
@@ -143,6 +145,8 @@ export default function NewProgramPage() {
 						: undefined,
 				programUrl: programUrl || undefined,
 				description: description || undefined,
+				englishProficiencyRequirement: englishProficiencyRequirement || undefined,
+				admissionRequirement: admissionRequirement || undefined,
 			});
 			router.push("/admin/programs");
 		} catch (err) {
@@ -442,6 +446,29 @@ export default function NewProgramPage() {
 									value={toeflMinimum}
 									onChange={(e) => setToeflMinimum(e.target.value)}
 									disabled={isLoading}
+								/>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="englishProficiencyRequirement">English Proficiency Requirement</Label>
+								<Input
+									id="englishProficiencyRequirement"
+									value={englishProficiencyRequirement}
+									onChange={(e) => setEnglishProficiencyRequirement(e.target.value)}
+									placeholder="e.g., B1, C1 in English"
+									disabled={isLoading}
+								/>
+							</div>
+
+							<div className="space-y-2 md:col-span-2">
+								<Label htmlFor="admissionRequirement">Other Admission Requirements</Label>
+								<textarea
+									id="admissionRequirement"
+									value={admissionRequirement}
+									onChange={(e) => setAdmissionRequirement(e.target.value)}
+									placeholder="e.g., Requires Master 1 before Master 2"
+									disabled={isLoading}
+									className="w-full min-h-[80px] px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 								/>
 							</div>
 						</div>
