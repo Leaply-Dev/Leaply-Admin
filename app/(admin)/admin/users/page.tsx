@@ -85,15 +85,10 @@ export default function UsersPage() {
 		fetchUsers();
 	}, [fetchUsers]);
 
-	// Reset page when tab changes
+	// Reset page when filters change
 	useEffect(() => {
 		setPage(0);
-	}, [activeTab]);
-
-	// Reset page when sorting changes
-	useEffect(() => {
-		setPage(0);
-	}, [sorting]);
+	}, [activeTab, sorting, roleFilter, search]);
 
 	const handleDelete = async () => {
 		if (!deleteId) return;
