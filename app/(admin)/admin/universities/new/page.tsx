@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -312,12 +313,14 @@ export default function NewUniversityPage() {
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="logoUrl">Logo URL</Label>
-								<Input
-									id="logoUrl"
-									type="url"
+								<Label>Logo</Label>
+								<ImageUpload
 									value={logoUrl}
-									onChange={(e) => setLogoUrl(e.target.value)}
+									onChange={(url) => setLogoUrl(url || "")}
+									onUpload={async (file) => {
+										const result = await adminApi.uploadUniversityLogo(file);
+										return result.logoUrl;
+									}}
 									disabled={isLoading}
 								/>
 							</div>

@@ -130,6 +130,44 @@ export async function deleteUniversity(id: string): Promise<void> {
 	return apiClient.delete(`/v1/admin/universities/${id}`);
 }
 
+export interface UploadLogoResponse {
+	logoUrl: string;
+}
+
+export async function uploadUniversityLogo(
+	file: File,
+): Promise<UploadLogoResponse> {
+	const formData = new FormData();
+	formData.append("file", file);
+
+	const token =
+		typeof window !== "undefined"
+			? localStorage.getItem("leaply-admin-auth")
+			: null;
+	const authData = token ? JSON.parse(token) : null;
+
+	const response = await fetch(
+		`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"}/v1/admin/universities/upload-logo`,
+		{
+			method: "POST",
+			headers: {
+				...(authData?.state?.token && {
+					Authorization: `Bearer ${authData.state.token}`,
+				}),
+			},
+			body: formData,
+		},
+	);
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.message || "Failed to upload logo");
+	}
+
+	const result = await response.json();
+	return result.data;
+}
+
 // Programs
 export async function getPrograms(
 	params?: ProgramListParams,
@@ -382,6 +420,7 @@ export const adminApi = {
 	createUniversity,
 	updateUniversity,
 	deleteUniversity,
+	uploadUniversityLogo,
 	getPrograms,
 	getProgram,
 	createProgram,
