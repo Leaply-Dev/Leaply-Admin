@@ -1,18 +1,18 @@
 "use client";
 
 import {
+	Award,
 	Building2,
-	Calendar,
-	CheckCircle,
 	GraduationCap,
+	Sparkles,
 	UserCheck,
 	UserPlus,
 	Users,
-	XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminApi } from "@/lib/api/adminApi";
 import type { DashboardStatsResponse } from "@/lib/types/admin";
@@ -61,6 +61,28 @@ function StatCardSkeleton() {
 	);
 }
 
+function MajorCoverageItem({
+	major,
+	count,
+	maxCount,
+}: {
+	major: string;
+	count: number;
+	maxCount: number;
+}) {
+	const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+
+	return (
+		<div className="space-y-1">
+			<div className="flex justify-between text-sm">
+				<span className="text-muted-foreground">{major}</span>
+				<span className="font-medium">{count}</span>
+			</div>
+			<Progress value={percentage} className="h-2" />
+		</div>
+	);
+}
+
 export default function DashboardPage() {
 	const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
@@ -80,6 +102,14 @@ export default function DashboardPage() {
 		fetchStats();
 	}, []);
 
+	// Process major coverage data
+	const majorCoverageData = stats?.programsByMajor
+		? Object.entries(stats.programsByMajor)
+				.sort(([, a], [, b]) => b - a)
+				.slice(0, 10) // Top 10 majors
+		: [];
+	const maxMajorCount = majorCoverageData.length > 0 ? majorCoverageData[0][1] : 0;
+
 	if (error) {
 		return (
 			<div>
@@ -95,16 +125,16 @@ export default function DashboardPage() {
 		<div>
 			<PageHeader title="Dashboard" description="Overview of your platform" />
 
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+			{/* User Metrics */}
+			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
 				{isLoading ? (
-					Array.from({ length: 8 }).map((_, i) => <StatCardSkeleton key={i} />)
+					Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
 				) : stats ? (
 					<>
 						<StatCard
 							title="Total Users"
 							value={stats.totalUsers}
 							icon={Users}
-							description={`${stats.activeUsers} active in last 30 days`}
 						/>
 						<StatCard
 							title="New Users This Month"
@@ -115,14 +145,23 @@ export default function DashboardPage() {
 							title="Onboarded Users"
 							value={stats.onboardedUsers}
 							icon={UserCheck}
-							description={`${Math.round((stats.onboardedUsers / stats.totalUsers) * 100)}% completion rate`}
+							description={`${stats.onboardingCompletionRate.toFixed(1)}% completion rate`}
 						/>
 						<StatCard
-							title="Upcoming Deadlines"
-							value={stats.upcomingDeadlines}
-							icon={Calendar}
-							description="Intakes in next 30 days"
+							title="New Scholarships This Month"
+							value={stats.newScholarshipsThisMonth}
+							icon={Sparkles}
 						/>
+					</>
+				) : null}
+			</div>
+
+			{/* Content Metrics */}
+			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+				{isLoading ? (
+					Array.from({ length: 3 }).map((_, i) => <StatCardSkeleton key={i} />)
+				) : stats ? (
+					<>
 						<StatCard
 							title="Universities"
 							value={stats.totalUniversities}
@@ -134,62 +173,49 @@ export default function DashboardPage() {
 							icon={GraduationCap}
 						/>
 						<StatCard
-							title="Accepted Applications"
-							value={stats.applicationsByStatus.accepted}
-							icon={CheckCircle}
-						/>
-						<StatCard
-							title="Rejected Applications"
-							value={stats.applicationsByStatus.rejected}
-							icon={XCircle}
+							title="Scholarships"
+							value={stats.totalScholarships}
+							icon={Award}
 						/>
 					</>
 				) : null}
 			</div>
 
-			{stats && (
-				<div className="mt-8">
-					<Card>
-						<CardHeader>
-							<CardTitle>Application Status Breakdown</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<div className="grid gap-4 md:grid-cols-5">
-								<div className="text-center p-4 bg-muted/50 rounded-lg">
-									<div className="text-2xl font-bold">
-										{stats.applicationsByStatus.planning}
-									</div>
-									<div className="text-sm text-muted-foreground">Planning</div>
+			{/* Major Field Coverage */}
+			{isLoading ? (
+				<Card>
+					<CardHeader>
+						<Skeleton className="h-6 w-48" />
+					</CardHeader>
+					<CardContent className="space-y-4">
+						{Array.from({ length: 5 }).map((_, i) => (
+							<div key={i} className="space-y-2">
+								<div className="flex justify-between">
+									<Skeleton className="h-4 w-32" />
+									<Skeleton className="h-4 w-8" />
 								</div>
-								<div className="text-center p-4 bg-muted/50 rounded-lg">
-									<div className="text-2xl font-bold">
-										{stats.applicationsByStatus.writing}
-									</div>
-									<div className="text-sm text-muted-foreground">Writing</div>
-								</div>
-								<div className="text-center p-4 bg-muted/50 rounded-lg">
-									<div className="text-2xl font-bold">
-										{stats.applicationsByStatus.submitted}
-									</div>
-									<div className="text-sm text-muted-foreground">Submitted</div>
-								</div>
-								<div className="text-center p-4 bg-primary/10 rounded-lg">
-									<div className="text-2xl font-bold text-primary">
-										{stats.applicationsByStatus.accepted}
-									</div>
-									<div className="text-sm text-muted-foreground">Accepted</div>
-								</div>
-								<div className="text-center p-4 bg-destructive/10 rounded-lg">
-									<div className="text-2xl font-bold text-destructive">
-										{stats.applicationsByStatus.rejected}
-									</div>
-									<div className="text-sm text-muted-foreground">Rejected</div>
-								</div>
+								<Skeleton className="h-2 w-full" />
 							</div>
-						</CardContent>
-					</Card>
-				</div>
-			)}
+						))}
+					</CardContent>
+				</Card>
+			) : stats && majorCoverageData.length > 0 ? (
+				<Card>
+					<CardHeader>
+						<CardTitle>Major Field Coverage</CardTitle>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						{majorCoverageData.map(([major, count]) => (
+							<MajorCoverageItem
+								key={major}
+								major={major}
+								count={count}
+								maxCount={maxMajorCount}
+							/>
+						))}
+					</CardContent>
+				</Card>
+			) : null}
 		</div>
 	);
 }

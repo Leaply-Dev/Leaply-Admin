@@ -35,20 +35,20 @@ export interface LoginRequest {
 
 // Dashboard Stats
 export interface DashboardStatsResponse {
+	// User metrics
 	totalUsers: number;
-	activeUsers: number;
 	newUsersThisMonth: number;
 	onboardedUsers: number;
+	onboardingCompletionRate: number;
+
+	// Content metrics
 	totalUniversities: number;
 	totalPrograms: number;
-	applicationsByStatus: {
-		planning: number;
-		writing: number;
-		submitted: number;
-		accepted: number;
-		rejected: number;
-	};
-	upcomingDeadlines: number;
+	totalScholarships: number;
+	newScholarshipsThisMonth: number;
+
+	// Program distribution by major category
+	programsByMajor: Record<string, number>;
 }
 
 // User Admin
