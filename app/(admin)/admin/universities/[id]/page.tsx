@@ -13,12 +13,15 @@ import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
+	SelectLabel,
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminApi } from "@/lib/api/adminApi";
+import type { RegionOption, CountryOption } from "@/lib/types/admin";
 
 export default function EditUniversityPage() {
 	const params = useParams();
@@ -45,6 +48,10 @@ export default function EditUniversityPage() {
 	const [logoUrl, setLogoUrl] = useState("");
 	const [websiteUrl, setWebsiteUrl] = useState("");
 	const [description, setDescription] = useState("");
+
+	// Dropdown options from API
+	const [regionOptions, setRegionOptions] = useState<RegionOption[]>([]);
+	const [countryOptions, setCountryOptions] = useState<CountryOption[]>([]);
 
 	useEffect(() => {
 		const fetchUniversity = async () => {
@@ -75,6 +82,20 @@ export default function EditUniversityPage() {
 		};
 		fetchUniversity();
 	}, [id]);
+
+	// Fetch dropdown options on mount
+	useEffect(() => {
+		const fetchOptions = async () => {
+			try {
+				const options = await adminApi.getDropdownOptions();
+				setRegionOptions(options.regions);
+				setCountryOptions(options.countries);
+			} catch (err) {
+				console.error("Failed to fetch dropdown options:", err);
+			}
+		};
+		fetchOptions();
+	}, []);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -198,13 +219,35 @@ export default function EditUniversityPage() {
 
 							<div className="space-y-2">
 								<Label htmlFor="country">Country *</Label>
-								<Input
-									id="country"
+								<Select
 									value={country}
-									onChange={(e) => setCountry(e.target.value)}
-									required
+									onValueChange={(val) => {
+										setCountry(val);
+										const countryOpt = countryOptions.find((c) => c.value === val);
+										if (countryOpt) {
+											setRegion(countryOpt.region);
+										}
+									}}
 									disabled={isLoading}
-								/>
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select country" />
+									</SelectTrigger>
+									<SelectContent>
+										{regionOptions.map((reg) => (
+											<SelectGroup key={reg.value}>
+												<SelectLabel>{reg.label}</SelectLabel>
+												{countryOptions
+													.filter((c) => c.region === reg.value)
+													.map((c) => (
+														<SelectItem key={c.value} value={c.value}>
+															{c.label}
+														</SelectItem>
+													))}
+											</SelectGroup>
+										))}
+									</SelectContent>
+								</Select>
 							</div>
 
 							<div className="space-y-2">
@@ -219,12 +262,22 @@ export default function EditUniversityPage() {
 
 							<div className="space-y-2">
 								<Label htmlFor="region">Region</Label>
-								<Input
-									id="region"
+								<Select
 									value={region}
-									onChange={(e) => setRegion(e.target.value)}
+									onValueChange={setRegion}
 									disabled={isLoading}
-								/>
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select region" />
+									</SelectTrigger>
+									<SelectContent>
+										{regionOptions.map((reg) => (
+											<SelectItem key={reg.value} value={reg.value}>
+												{reg.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 							</div>
 
 							<div className="space-y-2">
