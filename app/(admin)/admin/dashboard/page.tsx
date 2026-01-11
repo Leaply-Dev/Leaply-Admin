@@ -87,13 +87,13 @@ export default function DashboardPage() {
 		fetchStats();
 	}, []);
 
-	// Process major coverage data - all majors sorted by count descending
-	const majorCoverageData = stats?.programsByMajor
-		? Object.entries(stats.programsByMajor).sort(([, a], [, b]) => b - a)
+	// Process prerequisite major coverage data - all majors sorted by count descending
+	const prereqMajorData = stats?.programsByPrerequisiteMajor
+		? Object.entries(stats.programsByPrerequisiteMajor).sort(([, a], [, b]) => b - a)
 		: [];
 
-	// Calculate total programs across all majors (for percentage)
-	const totalMajorCount = majorCoverageData.reduce(
+	// Calculate total for percentage
+	const totalPrereqMajorCount = prereqMajorData.reduce(
 		(sum, [, count]) => sum + count,
 		0
 	);
@@ -169,10 +169,10 @@ export default function DashboardPage() {
 				) : null}
 			</div>
 
-			{/* Major Field Coverage */}
+			{/* Prerequisite Major Coverage */}
 			<Card>
 				<CardHeader>
-					<CardTitle>Major Field Coverage</CardTitle>
+					<CardTitle>Prerequisite Major Coverage</CardTitle>
 				</CardHeader>
 				<CardContent>
 					{isLoading ? (
@@ -184,23 +184,23 @@ export default function DashboardPage() {
 								</div>
 							))}
 						</div>
-					) : majorCoverageData.length > 0 ? (
+					) : prereqMajorData.length > 0 ? (
 						<Table>
 							<TableHeader>
 								<TableRow>
-									<TableHead>Major Category</TableHead>
+									<TableHead>Prerequisite Major</TableHead>
 									<TableHead className="text-right">Programs</TableHead>
 									<TableHead className="text-right">% of Total</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{majorCoverageData.map(([major, count]) => (
+								{prereqMajorData.map(([major, count]) => (
 									<TableRow key={major}>
 										<TableCell className="font-medium">{major}</TableCell>
 										<TableCell className="text-right">{count}</TableCell>
 										<TableCell className="text-right text-muted-foreground">
-											{totalMajorCount > 0
-												? ((count / totalMajorCount) * 100).toFixed(1)
+											{totalPrereqMajorCount > 0
+												? ((count / totalPrereqMajorCount) * 100).toFixed(1)
 												: 0}
 											%
 										</TableCell>
@@ -210,8 +210,8 @@ export default function DashboardPage() {
 						</Table>
 					) : (
 						<p className="text-sm text-muted-foreground py-4 text-center">
-							No major category data available. Programs may not have major
-							categories assigned.
+							No prerequisite major data available. Programs may not have
+							prerequisite majors assigned.
 						</p>
 					)}
 				</CardContent>

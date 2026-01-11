@@ -47,8 +47,8 @@ export interface DashboardStatsResponse {
 	totalScholarships: number;
 	newScholarshipsThisMonth: number;
 
-	// Program distribution by major category
-	programsByMajor: Record<string, number>;
+	// Program distribution by prerequisite major (bachelor's degree background)
+	programsByPrerequisiteMajor: Record<string, number>;
 }
 
 // User Admin
