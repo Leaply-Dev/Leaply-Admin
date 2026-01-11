@@ -12,13 +12,15 @@ import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
+	SelectLabel,
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { adminApi } from "@/lib/api/adminApi";
-import type { UniversityAdminResponse } from "@/lib/types/admin";
+import type { UniversityAdminResponse, RegionOption, CountryOption } from "@/lib/types/admin";
 
 // Helper to format enum value to display label (e.g., "computer_science" -> "Computer Science")
 const formatEnumLabel = (value: string): string => {
@@ -35,6 +37,8 @@ export default function NewProgramPage() {
 
 	// Dropdown options from API
 	const [prerequisiteMajorOptions, setPrerequisiteMajorOptions] = useState<string[]>([]);
+	const [regionOptions, setRegionOptions] = useState<RegionOption[]>([]);
+	const [countryOptions, setCountryOptions] = useState<CountryOption[]>([]);
 
 	// Fetch dropdown options on mount
 	useEffect(() => {
@@ -42,6 +46,8 @@ export default function NewProgramPage() {
 			try {
 				const options = await adminApi.getDropdownOptions();
 				setPrerequisiteMajorOptions(options.prerequisiteMajors);
+				setRegionOptions(options.regions);
+				setCountryOptions(options.countries);
 			} catch (err) {
 				console.error("Failed to fetch dropdown options:", err);
 			}
@@ -52,6 +58,7 @@ export default function NewProgramPage() {
 	const [universityId, setUniversityId] = useState("");
 	const [universityDisplay, setUniversityDisplay] = useState("");
 	const [name, setName] = useState("");
+	const [country, setCountry] = useState("");
 	const [degreeType, setDegreeType] = useState("");
 	const [degreeName, setDegreeName] = useState("");
 	const [durationMonths, setDurationMonths] = useState("");
@@ -132,16 +139,16 @@ export default function NewProgramPage() {
 				requirements:
 					gpaMinimum || ieltsMinimum || toeflMinimum
 						? {
-								gpaMinimum: gpaMinimum
-									? Number.parseFloat(gpaMinimum)
-									: undefined,
-								ieltsMinimum: ieltsMinimum
-									? Number.parseFloat(ieltsMinimum)
-									: undefined,
-								toeflMinimum: toeflMinimum
-									? Number.parseInt(toeflMinimum, 10)
-									: undefined,
-							}
+							gpaMinimum: gpaMinimum
+								? Number.parseFloat(gpaMinimum)
+								: undefined,
+							ieltsMinimum: ieltsMinimum
+								? Number.parseFloat(ieltsMinimum)
+								: undefined,
+							toeflMinimum: toeflMinimum
+								? Number.parseInt(toeflMinimum, 10)
+								: undefined,
+						}
 						: undefined,
 				programUrl: programUrl || undefined,
 				description: description || undefined,
@@ -208,6 +215,33 @@ export default function NewProgramPage() {
 									required
 									disabled={isLoading}
 								/>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="country">Country</Label>
+								<Select
+									value={country}
+									onValueChange={setCountry}
+									disabled={isLoading}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select country" />
+									</SelectTrigger>
+									<SelectContent>
+										{regionOptions.map((region) => (
+											<SelectGroup key={region.value}>
+												<SelectLabel>{region.label}</SelectLabel>
+												{countryOptions
+													.filter((c) => c.region === region.value)
+													.map((countryOpt) => (
+														<SelectItem key={countryOpt.value} value={countryOpt.value}>
+															{countryOpt.label}
+														</SelectItem>
+													))}
+											</SelectGroup>
+										))}
+									</SelectContent>
+								</Select>
 							</div>
 
 							<div className="space-y-2">

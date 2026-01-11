@@ -146,6 +146,11 @@ export default function ScholarshipsPage() {
         fetchScholarships();
     }, [fetchScholarships]);
 
+    // Reset page when filters change
+    useEffect(() => {
+        setPage(0);
+    }, [search, sourceType, coverageType, eligibilityType, isActive]);
+
     const handleDelete = async () => {
         if (!deleteId) return;
         setIsDeleting(true);

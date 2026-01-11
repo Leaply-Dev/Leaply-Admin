@@ -12,12 +12,15 @@ import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
+	SelectLabel,
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminApi } from "@/lib/api/adminApi";
+import type { RegionOption, CountryOption } from "@/lib/types/admin";
 
 const PREREQUISITE_SUGGESTIONS = [
 	"Computer Science",
@@ -41,6 +44,7 @@ export default function EditProgramPage() {
 
 	const [universityName, setUniversityName] = useState("");
 	const [name, setName] = useState("");
+	const [country, setCountry] = useState("");
 	const [degreeType, setDegreeType] = useState("");
 	const [degreeName, setDegreeName] = useState("");
 	const [durationMonths, setDurationMonths] = useState("");
@@ -55,12 +59,15 @@ export default function EditProgramPage() {
 	const [toeflMinimum, setToeflMinimum] = useState("");
 	const [programUrl, setProgramUrl] = useState("");
 	const [description, setDescription] = useState("");
-	// New fields
 	const [prerequisiteMajors, setPrerequisiteMajors] = useState<string[]>([]);
 	const [prerequisiteInput, setPrerequisiteInput] = useState("");
 	const [minWorkExperienceYears, setMinWorkExperienceYears] = useState("");
 	const [englishProficiencyRequirement, setEnglishProficiencyRequirement] = useState("");
 	const [admissionRequirement, setAdmissionRequirement] = useState("");
+
+	// Dropdown options from API
+	const [regionOptions, setRegionOptions] = useState<RegionOption[]>([]);
+	const [countryOptions, setCountryOptions] = useState<CountryOption[]>([]);
 
 	useEffect(() => {
 		const fetchProgram = async () => {
@@ -97,6 +104,20 @@ export default function EditProgramPage() {
 		};
 		fetchProgram();
 	}, [id]);
+
+	// Fetch dropdown options on mount
+	useEffect(() => {
+		const fetchOptions = async () => {
+			try {
+				const options = await adminApi.getDropdownOptions();
+				setRegionOptions(options.regions);
+				setCountryOptions(options.countries);
+			} catch (err) {
+				console.error("Failed to fetch dropdown options:", err);
+			}
+		};
+		fetchOptions();
+	}, []);
 
 	const handleStudyTypeChange = (type: string, checked: boolean) => {
 		if (checked) {
@@ -158,16 +179,16 @@ export default function EditProgramPage() {
 				requirements:
 					gpaMinimum || ieltsMinimum || toeflMinimum
 						? {
-								gpaMinimum: gpaMinimum
-									? Number.parseFloat(gpaMinimum)
-									: undefined,
-								ieltsMinimum: ieltsMinimum
-									? Number.parseFloat(ieltsMinimum)
-									: undefined,
-								toeflMinimum: toeflMinimum
-									? Number.parseInt(toeflMinimum, 10)
-									: undefined,
-							}
+							gpaMinimum: gpaMinimum
+								? Number.parseFloat(gpaMinimum)
+								: undefined,
+							ieltsMinimum: ieltsMinimum
+								? Number.parseFloat(ieltsMinimum)
+								: undefined,
+							toeflMinimum: toeflMinimum
+								? Number.parseInt(toeflMinimum, 10)
+								: undefined,
+						}
 						: undefined,
 				programUrl: programUrl || undefined,
 				description: description || undefined,
@@ -252,6 +273,33 @@ export default function EditProgramPage() {
 									required
 									disabled={isLoading}
 								/>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="country">Country</Label>
+								<Select
+									value={country}
+									onValueChange={setCountry}
+									disabled={isLoading}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select country" />
+									</SelectTrigger>
+									<SelectContent>
+										{regionOptions.map((region) => (
+											<SelectGroup key={region.value}>
+												<SelectLabel>{region.label}</SelectLabel>
+												{countryOptions
+													.filter((c) => c.region === region.value)
+													.map((countryOpt) => (
+														<SelectItem key={countryOpt.value} value={countryOpt.value}>
+															{countryOpt.label}
+														</SelectItem>
+													))}
+											</SelectGroup>
+										))}
+									</SelectContent>
+								</Select>
 							</div>
 
 							<div className="space-y-2">

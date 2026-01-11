@@ -64,6 +64,11 @@ export default function ProgramsPage() {
 		fetchPrograms();
 	}, [fetchPrograms]);
 
+	// Reset page when filters change
+	useEffect(() => {
+		setPage(0);
+	}, [search]);
+
 	const handleDelete = async () => {
 		if (!deleteId) return;
 		setIsDeleting(true);
