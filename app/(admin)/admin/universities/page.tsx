@@ -39,12 +39,14 @@ export default function UniversitiesPage() {
 
 	const fetchUniversities = useCallback(async () => {
 		setIsLoading(true);
+		console.log("[DEBUG] Fetching universities with page:", page, "search:", search);
 		try {
 			const data = await adminApi.getUniversities({
 				page,
 				size: 20,
 				search: search || undefined,
 			});
+			console.log("[DEBUG] API Response - content length:", data.content.length, "totalPages:", data.totalPages, "totalElements:", data.totalElements);
 			setUniversities(data.content);
 			setTotalPages(data.totalPages);
 		} catch (error) {
