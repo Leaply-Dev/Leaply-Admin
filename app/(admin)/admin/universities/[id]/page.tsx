@@ -230,7 +230,7 @@ export default function EditUniversityPage() {
 								>
 									<SelectTrigger>
 										<SelectValue placeholder="Select region">
-											{region && regionOptions.find(r => r.value === region)?.label}
+											{region && (regionOptions.find(r => r.value === region)?.label || regionOptions.find(r => r.label === region)?.label || region)}
 										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
@@ -252,7 +252,7 @@ export default function EditUniversityPage() {
 								>
 									<SelectTrigger>
 										<SelectValue placeholder={region ? "Select country" : "Select region first"}>
-											{country && countryOptions.find(c => c.value === country)?.label}
+											{country && (countryOptions.find(c => c.value === country)?.label || countryOptions.find(c => c.label === country)?.label || country)}
 										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>

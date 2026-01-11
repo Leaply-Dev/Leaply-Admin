@@ -284,7 +284,7 @@ export default function EditProgramPage() {
 								>
 									<SelectTrigger>
 										<SelectValue placeholder="Select country">
-											{country && countryOptions.find(c => c.value === country)?.label}
+											{country && (countryOptions.find(c => c.value === country)?.label || countryOptions.find(c => c.label === country)?.label || country)}
 										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
