@@ -18,7 +18,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { adminApi } from "@/lib/api/adminApi";
-import type { RegionOption } from "@/lib/types/admin";
+import type { RegionOption, CountryOption } from "@/lib/types/admin";
 
 export default function NewUniversityPage() {
 	const router = useRouter();
@@ -26,15 +26,16 @@ export default function NewUniversityPage() {
 	const [error, setError] = useState<string | null>(null);
 
 	// Dropdown options
-	const [regions, setRegions] = useState<RegionOption[]>([]);
-	const [countries, setCountries] = useState<string[]>([]);
+	const [regionOptions, setRegionOptions] = useState<RegionOption[]>([]);
+	const [countryOptions, setCountryOptions] = useState<CountryOption[]>([]);
 
 	// Fetch dropdown options on mount
 	useEffect(() => {
 		const fetchOptions = async () => {
 			try {
 				const options = await adminApi.getDropdownOptions();
-				setRegions(options.regions);
+				setRegionOptions(options.regions);
+				setCountryOptions(options.countries);
 			} catch (err) {
 				console.error("Failed to fetch dropdown options:", err);
 			}
@@ -152,22 +153,22 @@ export default function NewUniversityPage() {
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="region">Region</Label>
+								<Label htmlFor="region">Region *</Label>
 								<Select
 									value={region}
 									onValueChange={(val) => {
 										setRegion(val);
 										setCountry(""); // Reset country when region changes
-										const selectedRegion = regions.find(r => r.value === val);
-										setCountries(selectedRegion?.countries || []);
 									}}
 									disabled={isLoading}
 								>
 									<SelectTrigger>
-										<SelectValue placeholder="Select region" />
+										<SelectValue placeholder="Select region">
+											{region && regionOptions.find(r => r.value === region)?.label}
+										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
-										{regions.map((r) => (
+										{regionOptions.map((r) => (
 											<SelectItem key={r.value} value={r.value}>
 												{r.label}
 											</SelectItem>
@@ -181,17 +182,21 @@ export default function NewUniversityPage() {
 								<Select
 									value={country}
 									onValueChange={setCountry}
-									disabled={isLoading || countries.length === 0}
+									disabled={isLoading || !region}
 								>
 									<SelectTrigger>
-										<SelectValue placeholder={region ? "Select country" : "Select region first"} />
+										<SelectValue placeholder={region ? "Select country" : "Select region first"}>
+											{country && countryOptions.find(c => c.value === country)?.label}
+										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
-										{countries.map((c) => (
-											<SelectItem key={c} value={c}>
-												{c}
-											</SelectItem>
-										))}
+										{countryOptions
+											.filter((c) => c.region === region)
+											.map((c) => (
+												<SelectItem key={c.value} value={c.value}>
+													{c.label}
+												</SelectItem>
+											))}
 									</SelectContent>
 								</Select>
 							</div>

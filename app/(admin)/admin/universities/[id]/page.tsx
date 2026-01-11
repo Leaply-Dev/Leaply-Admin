@@ -218,34 +218,51 @@ export default function EditUniversityPage() {
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="country">Country *</Label>
+								<Label htmlFor="region">Region *</Label>
 								<Select
-									value={country}
+									value={region}
 									onValueChange={(val) => {
-										setCountry(val);
-										const countryOpt = countryOptions.find((c) => c.value === val);
-										if (countryOpt) {
-											setRegion(countryOpt.region);
-										}
+										setRegion(val);
+										// Reset country when region changes
+										setCountry("");
 									}}
 									disabled={isLoading}
 								>
 									<SelectTrigger>
-										<SelectValue placeholder="Select country" />
+										<SelectValue placeholder="Select region">
+											{region && regionOptions.find(r => r.value === region)?.label}
+										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
 										{regionOptions.map((reg) => (
-											<SelectGroup key={reg.value}>
-												<SelectLabel>{reg.label}</SelectLabel>
-												{countryOptions
-													.filter((c) => c.region === reg.value)
-													.map((c) => (
-														<SelectItem key={c.value} value={c.value}>
-															{c.label}
-														</SelectItem>
-													))}
-											</SelectGroup>
+											<SelectItem key={reg.value} value={reg.value}>
+												{reg.label}
+											</SelectItem>
 										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="country">Country *</Label>
+								<Select
+									value={country}
+									onValueChange={setCountry}
+									disabled={isLoading || !region}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder={region ? "Select country" : "Select region first"}>
+											{country && countryOptions.find(c => c.value === country)?.label}
+										</SelectValue>
+									</SelectTrigger>
+									<SelectContent>
+										{countryOptions
+											.filter((c) => c.region === region)
+											.map((c) => (
+												<SelectItem key={c.value} value={c.value}>
+													{c.label}
+												</SelectItem>
+											))}
 									</SelectContent>
 								</Select>
 							</div>
@@ -258,26 +275,6 @@ export default function EditUniversityPage() {
 									onChange={(e) => setCity(e.target.value)}
 									disabled={isLoading}
 								/>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="region">Region</Label>
-								<Select
-									value={region}
-									onValueChange={setRegion}
-									disabled={isLoading}
-								>
-									<SelectTrigger>
-										<SelectValue placeholder="Select region" />
-									</SelectTrigger>
-									<SelectContent>
-										{regionOptions.map((reg) => (
-											<SelectItem key={reg.value} value={reg.value}>
-												{reg.label}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
 							</div>
 
 							<div className="space-y-2">

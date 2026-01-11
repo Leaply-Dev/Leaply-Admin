@@ -225,7 +225,9 @@ export default function NewProgramPage() {
 									disabled={isLoading}
 								>
 									<SelectTrigger>
-										<SelectValue placeholder="Select country" />
+										<SelectValue placeholder="Select country">
+											{country && countryOptions.find(c => c.value === country)?.label}
+										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
 										{regionOptions.map((region) => (
