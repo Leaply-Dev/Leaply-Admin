@@ -12,8 +12,15 @@ import {
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import { adminApi } from "@/lib/api/adminApi";
 import type { DashboardStatsResponse } from "@/lib/types/admin";
 
@@ -61,28 +68,6 @@ function StatCardSkeleton() {
 	);
 }
 
-function MajorCoverageItem({
-	major,
-	count,
-	maxCount,
-}: {
-	major: string;
-	count: number;
-	maxCount: number;
-}) {
-	const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
-
-	return (
-		<div className="space-y-1">
-			<div className="flex justify-between text-sm">
-				<span className="text-muted-foreground">{major}</span>
-				<span className="font-medium">{count}</span>
-			</div>
-			<Progress value={percentage} className="h-2" />
-		</div>
-	);
-}
-
 export default function DashboardPage() {
 	const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
@@ -102,13 +87,16 @@ export default function DashboardPage() {
 		fetchStats();
 	}, []);
 
-	// Process major coverage data
+	// Process major coverage data - all majors sorted by count descending
 	const majorCoverageData = stats?.programsByMajor
-		? Object.entries(stats.programsByMajor)
-				.sort(([, a], [, b]) => b - a)
-				.slice(0, 10) // Top 10 majors
+		? Object.entries(stats.programsByMajor).sort(([, a], [, b]) => b - a)
 		: [];
-	const maxMajorCount = majorCoverageData.length > 0 ? majorCoverageData[0][1] : 0;
+
+	// Calculate total programs across all majors (for percentage)
+	const totalMajorCount = majorCoverageData.reduce(
+		(sum, [, count]) => sum + count,
+		0
+	);
 
 	if (error) {
 		return (
@@ -182,40 +170,52 @@ export default function DashboardPage() {
 			</div>
 
 			{/* Major Field Coverage */}
-			{isLoading ? (
-				<Card>
-					<CardHeader>
-						<Skeleton className="h-6 w-48" />
-					</CardHeader>
-					<CardContent className="space-y-4">
-						{Array.from({ length: 5 }).map((_, i) => (
-							<div key={i} className="space-y-2">
-								<div className="flex justify-between">
-									<Skeleton className="h-4 w-32" />
-									<Skeleton className="h-4 w-8" />
+			<Card>
+				<CardHeader>
+					<CardTitle>Major Field Coverage</CardTitle>
+				</CardHeader>
+				<CardContent>
+					{isLoading ? (
+						<div className="space-y-3">
+							{Array.from({ length: 5 }).map((_, i) => (
+								<div key={i} className="flex justify-between">
+									<Skeleton className="h-4 w-48" />
+									<Skeleton className="h-4 w-16" />
 								</div>
-								<Skeleton className="h-2 w-full" />
-							</div>
-						))}
-					</CardContent>
-				</Card>
-			) : stats && majorCoverageData.length > 0 ? (
-				<Card>
-					<CardHeader>
-						<CardTitle>Major Field Coverage</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						{majorCoverageData.map(([major, count]) => (
-							<MajorCoverageItem
-								key={major}
-								major={major}
-								count={count}
-								maxCount={maxMajorCount}
-							/>
-						))}
-					</CardContent>
-				</Card>
-			) : null}
+							))}
+						</div>
+					) : majorCoverageData.length > 0 ? (
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Major Category</TableHead>
+									<TableHead className="text-right">Programs</TableHead>
+									<TableHead className="text-right">% of Total</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{majorCoverageData.map(([major, count]) => (
+									<TableRow key={major}>
+										<TableCell className="font-medium">{major}</TableCell>
+										<TableCell className="text-right">{count}</TableCell>
+										<TableCell className="text-right text-muted-foreground">
+											{totalMajorCount > 0
+												? ((count / totalMajorCount) * 100).toFixed(1)
+												: 0}
+											%
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					) : (
+						<p className="text-sm text-muted-foreground py-4 text-center">
+							No major category data available. Programs may not have major
+							categories assigned.
+						</p>
+					)}
+				</CardContent>
+			</Card>
 		</div>
 	);
 }
