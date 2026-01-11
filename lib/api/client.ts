@@ -1,3 +1,4 @@
+import type { RefreshTokenResponse } from "../types/admin";
 import { useAuthStore } from "../store/authStore";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
@@ -5,8 +6,27 @@ const isDev = process.env.NODE_ENV === "development";
 
 type RequestMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
+// Token refresh state management
+let isRefreshing = false;
+let refreshSubscribers: Array<(token: string) => void> = [];
+
+function subscribeTokenRefresh(callback: (token: string) => void) {
+	refreshSubscribers.push(callback);
+}
+
+function onTokenRefreshed(newToken: string) {
+	refreshSubscribers.forEach((callback) => callback(newToken));
+	refreshSubscribers = [];
+}
+
+function onRefreshFailed() {
+	refreshSubscribers = [];
+}
+
 interface FetchOptions extends RequestInit {
 	token?: string;
+	_retry?: boolean; // Flag to prevent infinite retry loops
+	_skipAuth?: boolean; // Skip auth header (for refresh endpoint)
 }
 
 export interface ApiResponse<T> {
@@ -63,29 +83,105 @@ export class ApiError extends Error {
 	}
 }
 
+async function refreshAccessToken(): Promise<string | null> {
+	const { refreshToken, setTokens, logout } = useAuthStore.getState();
+
+	if (!refreshToken) {
+		logout();
+		return null;
+	}
+
+	try {
+		const response = await fetch(`${API_URL}/v1/auth/refresh`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ refreshToken }),
+		});
+
+		if (!response.ok) {
+			throw new Error("Refresh failed");
+		}
+
+		const data = (await response.json()) as ApiResponse<RefreshTokenResponse>;
+
+		if (!data.success || !data.data) {
+			throw new Error("Invalid refresh response");
+		}
+
+		const { accessToken, refreshToken: newRefreshToken, expiresIn } = data.data;
+		setTokens(accessToken, newRefreshToken, expiresIn);
+
+		if (isDev) {
+			console.log("🔄 Token refreshed successfully");
+		}
+
+		return accessToken;
+	} catch (error) {
+		if (isDev) {
+			console.error("🔄 Token refresh failed:", error);
+		}
+		logout();
+		return null;
+	}
+}
+
+async function handleUnauthorized(): Promise<string | null> {
+	// If already refreshing, wait for it to complete
+	if (isRefreshing) {
+		return new Promise<string | null>((resolve) => {
+			subscribeTokenRefresh((token) => resolve(token));
+		});
+	}
+
+	isRefreshing = true;
+
+	try {
+		const newToken = await refreshAccessToken();
+
+		if (newToken) {
+			onTokenRefreshed(newToken);
+			return newToken;
+		}
+
+		onRefreshFailed();
+		// Redirect to login
+		if (typeof window !== "undefined") {
+			window.location.href = "/login?expired=true";
+		}
+		return null;
+	} finally {
+		isRefreshing = false;
+	}
+}
+
 async function apiFetch<T>(
 	endpoint: string,
 	method: RequestMethod = "GET",
 	body?: unknown,
 	options: FetchOptions = {},
 ): Promise<T> {
-	const { token, headers, ...customConfig } = options;
+	const { token, headers, _retry, _skipAuth, ...customConfig } = options;
 
 	const requestHeaders: HeadersInit = {
 		"Content-Type": "application/json",
 		...((headers as Record<string, string>) || {}),
 	};
 
-	if (token) {
-		requestHeaders.Authorization = `Bearer ${token}`;
-	} else {
-		try {
-			const storeToken = useAuthStore.getState().token;
-			if (storeToken) {
-				requestHeaders.Authorization = `Bearer ${storeToken}`;
+	// Add authorization header unless skipped
+	if (!_skipAuth) {
+		if (token) {
+			requestHeaders.Authorization = `Bearer ${token}`;
+		} else {
+			try {
+				const storeToken = useAuthStore.getState().accessToken;
+				if (storeToken) {
+					requestHeaders.Authorization = `Bearer ${storeToken}`;
+				}
+			} catch (e) {
+				if (isDev) console.warn("Failed to retrieve token from store", e);
 			}
-		} catch (e) {
-			if (isDev) console.warn("Failed to retrieve token from store", e);
 		}
 	}
 
@@ -161,16 +257,26 @@ async function apiFetch<T>(
 
 			if (isDev) apiError.logDetails();
 
-			// Auto-redirect on 401 (token expired)
-			if (response.status === 401) {
-				try {
-					useAuthStore.getState().logout();
-				} catch (e) {
-					if (isDev) console.warn("Failed to logout from store", e);
+			// Handle 401 Unauthorized - attempt token refresh
+			if (response.status === 401 && !_retry) {
+				const newToken = await handleUnauthorized();
+
+				if (newToken) {
+					// Retry the original request with new token
+					return apiFetch<T>(endpoint, method, body, {
+						...options,
+						token: newToken,
+						_retry: true,
+					});
 				}
-				if (typeof window !== "undefined") {
-					window.location.href = "/login?expired=true";
-				}
+
+				// Refresh failed, error will be thrown
+			}
+
+			// Handle 403 Forbidden - show error only, no logout
+			if (response.status === 403) {
+				// Just throw the error, don't logout
+				// User is authenticated but lacks permission
 			}
 
 			throw apiError;

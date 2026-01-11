@@ -13,9 +13,21 @@ export interface AdminProfile {
 
 interface AuthState {
 	profile: AdminProfile | null;
-	token: string | null;
+	accessToken: string | null;
+	refreshToken: string | null;
+	tokenExpiresAt: number | null; // Unix timestamp in ms
 	isAuthenticated: boolean;
-	login: (profile: AdminProfile, token: string) => void;
+	login: (
+		profile: AdminProfile,
+		accessToken: string,
+		refreshToken: string,
+		expiresIn: number,
+	) => void;
+	setTokens: (
+		accessToken: string,
+		refreshToken: string,
+		expiresIn: number,
+	) => void;
 	logout: () => void;
 	isAdmin: () => boolean;
 	isSuperAdmin: () => boolean;
@@ -25,15 +37,33 @@ export const useAuthStore = create<AuthState>()(
 	persist(
 		(set, get) => ({
 			profile: null,
-			token: null,
+			accessToken: null,
+			refreshToken: null,
+			tokenExpiresAt: null,
 			isAuthenticated: false,
 
-			login: (profile, token) => set({ profile, token, isAuthenticated: true }),
+			login: (profile, accessToken, refreshToken, expiresIn) =>
+				set({
+					profile,
+					accessToken,
+					refreshToken,
+					tokenExpiresAt: Date.now() + expiresIn * 1000,
+					isAuthenticated: true,
+				}),
+
+			setTokens: (accessToken, refreshToken, expiresIn) =>
+				set({
+					accessToken,
+					refreshToken,
+					tokenExpiresAt: Date.now() + expiresIn * 1000,
+				}),
 
 			logout: () =>
 				set({
 					profile: null,
-					token: null,
+					accessToken: null,
+					refreshToken: null,
+					tokenExpiresAt: null,
 					isAuthenticated: false,
 				}),
 
@@ -53,7 +83,9 @@ export const useAuthStore = create<AuthState>()(
 			name: "leaply-admin-auth",
 			partialize: (state) => ({
 				profile: state.profile,
-				token: state.token,
+				accessToken: state.accessToken,
+				refreshToken: state.refreshToken,
+				tokenExpiresAt: state.tokenExpiresAt,
 				isAuthenticated: state.isAuthenticated,
 			}),
 		},

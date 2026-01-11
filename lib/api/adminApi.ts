@@ -41,7 +41,25 @@ function buildQueryString<T extends object>(params?: T): string {
 
 // Auth
 export async function login(credentials: LoginRequest): Promise<AuthResponse> {
-	return apiClient.post<AuthResponse>("/v1/auth/login", credentials);
+	return apiClient.post<AuthResponse>("/v1/auth/login", credentials, {
+		_skipAuth: true,
+	});
+}
+
+export async function logout(): Promise<void> {
+	const { useAuthStore } = await import("../store/authStore");
+	const { refreshToken, logout: storeLogout } = useAuthStore.getState();
+
+	if (refreshToken) {
+		try {
+			await apiClient.post("/v1/auth/logout", { refreshToken });
+		} catch (error) {
+			// Silently fail - we still want to clear local state even if backend fails
+			console.warn("Logout API call failed:", error);
+		}
+	}
+
+	storeLogout();
 }
 
 // Stats
@@ -151,8 +169,8 @@ export async function uploadUniversityLogo(
 		{
 			method: "POST",
 			headers: {
-				...(authData?.state?.token && {
-					Authorization: `Bearer ${authData.state.token}`,
+				...(authData?.state?.accessToken && {
+					Authorization: `Bearer ${authData.state.accessToken}`,
 				}),
 			},
 			body: formData,
@@ -298,8 +316,8 @@ export async function importUniversities(
 		{
 			method: "POST",
 			headers: {
-				...(authData?.state?.token && {
-					Authorization: `Bearer ${authData.state.token}`,
+				...(authData?.state?.accessToken && {
+					Authorization: `Bearer ${authData.state.accessToken}`,
 				}),
 			},
 			body: formData,
@@ -331,8 +349,8 @@ export async function importPrograms(
 		{
 			method: "POST",
 			headers: {
-				...(authData?.state?.token && {
-					Authorization: `Bearer ${authData.state.token}`,
+				...(authData?.state?.accessToken && {
+					Authorization: `Bearer ${authData.state.accessToken}`,
 				}),
 			},
 			body: formData,
@@ -362,8 +380,8 @@ export async function importIntakes(file: File): Promise<ImportResultResponse> {
 		{
 			method: "POST",
 			headers: {
-				...(authData?.state?.token && {
-					Authorization: `Bearer ${authData.state.token}`,
+				...(authData?.state?.accessToken && {
+					Authorization: `Bearer ${authData.state.accessToken}`,
 				}),
 			},
 			body: formData,
@@ -391,8 +409,8 @@ export async function downloadTemplate(
 		`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"}/v1/admin/import/templates/${type}`,
 		{
 			headers: {
-				...(authData?.state?.token && {
-					Authorization: `Bearer ${authData.state.token}`,
+				...(authData?.state?.accessToken && {
+					Authorization: `Bearer ${authData.state.accessToken}`,
 				}),
 			},
 		},
@@ -407,6 +425,7 @@ export async function downloadTemplate(
 
 export const adminApi = {
 	login,
+	logout,
 	getStats,
 	getDropdownOptions,
 	getUsers,

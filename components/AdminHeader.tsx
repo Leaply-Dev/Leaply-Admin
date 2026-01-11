@@ -5,14 +5,15 @@ import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { adminApi } from "@/lib/api/adminApi";
 import { useAuthStore } from "@/lib/store/authStore";
 
 export function AdminHeader() {
 	const router = useRouter();
-	const { profile, logout } = useAuthStore();
+	const { profile } = useAuthStore();
 
-	const handleLogout = () => {
-		logout();
+	const handleLogout = async () => {
+		await adminApi.logout();
 		router.push("/login");
 	};
 

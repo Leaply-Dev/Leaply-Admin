@@ -45,7 +45,9 @@ export default function LoginPage() {
 					fullName: "",
 					role: response.role,
 				},
-				response.token,
+				response.accessToken,
+				response.refreshToken,
+				response.expiresIn,
 			);
 
 			router.push("/admin/universities");
