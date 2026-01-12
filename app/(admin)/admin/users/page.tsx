@@ -1,12 +1,24 @@
 "use client";
 
+import type { SortingState } from "@tanstack/react-table";
 import { Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { DataTable } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -19,18 +31,6 @@ import { adminApi } from "@/lib/api/adminApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import type { UserAdminResponse } from "@/lib/types/admin";
 import { createUserColumns } from "./columns";
-import type { SortingState } from "@tanstack/react-table";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Label } from "@/components/ui/label";
 
 export default function UsersPage() {
 	const { profile, isSuperAdmin } = useAuthStore();
@@ -50,7 +50,8 @@ export default function UsersPage() {
 	// New state for restore and hard delete
 	const [restoreId, setRestoreId] = useState<string | null>(null);
 	const [isRestoring, setIsRestoring] = useState(false);
-	const [hardDeleteUser, setHardDeleteUser] = useState<UserAdminResponse | null>(null);
+	const [hardDeleteUser, setHardDeleteUser] =
+		useState<UserAdminResponse | null>(null);
 	const [hardDeleteConfirmEmail, setHardDeleteConfirmEmail] = useState("");
 	const [isHardDeleting, setIsHardDeleting] = useState(false);
 
@@ -166,7 +167,11 @@ export default function UsersPage() {
 			<PageHeader title="Users" description="Manage user accounts and roles" />
 
 			{/* Tabs for Active/Deleted users */}
-			<Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "deleted")} className="mb-4">
+			<Tabs
+				value={activeTab}
+				onValueChange={(v) => setActiveTab(v as "active" | "deleted")}
+				className="mb-4"
+			>
 				<TabsList>
 					<TabsTrigger value="active">Active Users</TabsTrigger>
 					<TabsTrigger value="deleted">Deleted Users</TabsTrigger>
@@ -227,12 +232,16 @@ export default function UsersPage() {
 			/>
 
 			{/* Restore Confirmation Dialog */}
-			<AlertDialog open={!!restoreId} onOpenChange={(open) => !open && setRestoreId(null)}>
+			<AlertDialog
+				open={!!restoreId}
+				onOpenChange={(open) => !open && setRestoreId(null)}
+			>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Restore User</AlertDialogTitle>
 						<AlertDialogDescription>
-							Are you sure you want to restore this user? They will be moved back to the active users list.
+							Are you sure you want to restore this user? They will be moved
+							back to the active users list.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
@@ -245,25 +254,30 @@ export default function UsersPage() {
 			</AlertDialog>
 
 			{/* Hard Delete Confirmation Dialog */}
-			<AlertDialog open={!!hardDeleteUser} onOpenChange={(open) => {
-				if (!open) {
-					setHardDeleteUser(null);
-					setHardDeleteConfirmEmail("");
-				}
-			}}>
+			<AlertDialog
+				open={!!hardDeleteUser}
+				onOpenChange={(open) => {
+					if (!open) {
+						setHardDeleteUser(null);
+						setHardDeleteConfirmEmail("");
+					}
+				}}
+			>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle className="text-destructive">Permanently Delete User</AlertDialogTitle>
+						<AlertDialogTitle className="text-destructive">
+							Permanently Delete User
+						</AlertDialogTitle>
 						<AlertDialogDescription className="space-y-2">
 							<p className="font-semibold text-destructive">
 								This action is permanent and cannot be undone!
 							</p>
 							<p>
-								This will permanently delete the user <strong>{hardDeleteUser?.email}</strong> and all their associated data.
+								This will permanently delete the user{" "}
+								<strong>{hardDeleteUser?.email}</strong> and all their
+								associated data.
 							</p>
-							<p>
-								To confirm, type the user's email address below:
-							</p>
+							<p>To confirm, type the user's email address below:</p>
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<div className="py-4">
@@ -277,10 +291,15 @@ export default function UsersPage() {
 						/>
 					</div>
 					<AlertDialogFooter>
-						<AlertDialogCancel disabled={isHardDeleting}>Cancel</AlertDialogCancel>
+						<AlertDialogCancel disabled={isHardDeleting}>
+							Cancel
+						</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={handleHardDelete}
-							disabled={isHardDeleting || hardDeleteConfirmEmail !== hardDeleteUser?.email}
+							disabled={
+								isHardDeleting ||
+								hardDeleteConfirmEmail !== hardDeleteUser?.email
+							}
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 						>
 							{isHardDeleting ? "Deleting..." : "Permanently Delete"}

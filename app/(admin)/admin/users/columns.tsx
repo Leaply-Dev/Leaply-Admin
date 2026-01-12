@@ -93,7 +93,9 @@ export const createUserColumns = ({
 			cell: ({ row }) => {
 				const isDeleted = showDeleted;
 				return (
-					<div className={`font-medium ${isDeleted ? "text-muted-foreground" : ""}`}>
+					<div
+						className={`font-medium ${isDeleted ? "text-muted-foreground" : ""}`}
+					>
 						{row.getValue("fullName") || "-"}
 					</div>
 				);
@@ -114,7 +116,11 @@ export const createUserColumns = ({
 			},
 			cell: ({ row }) => {
 				const isDeleted = showDeleted;
-				return <div className={isDeleted ? "text-muted-foreground" : ""}>{row.getValue("email")}</div>;
+				return (
+					<div className={isDeleted ? "text-muted-foreground" : ""}>
+						{row.getValue("email")}
+					</div>
+				);
 			},
 		},
 		{
@@ -190,7 +196,11 @@ export const createUserColumns = ({
 			},
 			cell: ({ row }) => {
 				const isDeleted = showDeleted;
-				return <div className={isDeleted ? "text-muted-foreground" : ""}>{formatDate(row.getValue("lastActiveAt"))}</div>;
+				return (
+					<div className={isDeleted ? "text-muted-foreground" : ""}>
+						{formatDate(row.getValue("lastActiveAt"))}
+					</div>
+				);
 			},
 		},
 	];

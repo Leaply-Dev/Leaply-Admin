@@ -89,13 +89,15 @@ export default function DashboardPage() {
 
 	// Process prerequisite major coverage data - all majors sorted by count descending
 	const prereqMajorData = stats?.programsByPrerequisiteMajor
-		? Object.entries(stats.programsByPrerequisiteMajor).sort(([, a], [, b]) => b - a)
+		? Object.entries(stats.programsByPrerequisiteMajor).sort(
+				([, a], [, b]) => b - a,
+			)
 		: [];
 
 	// Calculate total for percentage
 	const totalPrereqMajorCount = prereqMajorData.reduce(
 		(sum, [, count]) => sum + count,
-		0
+		0,
 	);
 
 	if (error) {

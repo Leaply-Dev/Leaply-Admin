@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminApi } from "@/lib/api/adminApi";
-import type { RegionOption, CountryOption } from "@/lib/types/admin";
+import type { CountryOption, RegionOption } from "@/lib/types/admin";
 
 const PREREQUISITE_SUGGESTIONS = [
 	"Computer Science",
@@ -62,7 +62,8 @@ export default function EditProgramPage() {
 	const [prerequisiteMajors, setPrerequisiteMajors] = useState<string[]>([]);
 	const [prerequisiteInput, setPrerequisiteInput] = useState("");
 	const [minWorkExperienceYears, setMinWorkExperienceYears] = useState("");
-	const [englishProficiencyRequirement, setEnglishProficiencyRequirement] = useState("");
+	const [englishProficiencyRequirement, setEnglishProficiencyRequirement] =
+		useState("");
 	const [admissionRequirement, setAdmissionRequirement] = useState("");
 
 	// Dropdown options from API
@@ -94,7 +95,9 @@ export default function EditProgramPage() {
 				setMinWorkExperienceYears(
 					data.minWorkExperienceYears?.toString() || "",
 				);
-				setEnglishProficiencyRequirement(data.englishProficiencyRequirement || "");
+				setEnglishProficiencyRequirement(
+					data.englishProficiencyRequirement || "",
+				);
 				setAdmissionRequirement(data.admissionRequirement || "");
 			} catch (err) {
 				setError(err instanceof Error ? err.message : "Failed to load program");
@@ -179,20 +182,21 @@ export default function EditProgramPage() {
 				requirements:
 					gpaMinimum || ieltsMinimum || toeflMinimum
 						? {
-							gpaMinimum: gpaMinimum
-								? Number.parseFloat(gpaMinimum)
-								: undefined,
-							ieltsMinimum: ieltsMinimum
-								? Number.parseFloat(ieltsMinimum)
-								: undefined,
-							toeflMinimum: toeflMinimum
-								? Number.parseInt(toeflMinimum, 10)
-								: undefined,
-						}
+								gpaMinimum: gpaMinimum
+									? Number.parseFloat(gpaMinimum)
+									: undefined,
+								ieltsMinimum: ieltsMinimum
+									? Number.parseFloat(ieltsMinimum)
+									: undefined,
+								toeflMinimum: toeflMinimum
+									? Number.parseInt(toeflMinimum, 10)
+									: undefined,
+							}
 						: undefined,
 				programUrl: programUrl || undefined,
 				description: description || undefined,
-				englishProficiencyRequirement: englishProficiencyRequirement || undefined,
+				englishProficiencyRequirement:
+					englishProficiencyRequirement || undefined,
 				admissionRequirement: admissionRequirement || undefined,
 			});
 			router.push("/admin/programs");
@@ -284,7 +288,12 @@ export default function EditProgramPage() {
 								>
 									<SelectTrigger>
 										<SelectValue placeholder="Select country">
-											{country && (countryOptions.find(c => c.value === country)?.label || countryOptions.find(c => c.label === country)?.label || country)}
+											{country &&
+												(countryOptions.find((c) => c.value === country)
+													?.label ||
+													countryOptions.find((c) => c.label === country)
+														?.label ||
+													country)}
 										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
@@ -294,7 +303,10 @@ export default function EditProgramPage() {
 												{countryOptions
 													.filter((c) => c.region === region.value)
 													.map((countryOpt) => (
-														<SelectItem key={countryOpt.value} value={countryOpt.value}>
+														<SelectItem
+															key={countryOpt.value}
+															value={countryOpt.value}
+														>
 															{countryOpt.label}
 														</SelectItem>
 													))}
@@ -558,18 +570,24 @@ export default function EditProgramPage() {
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="englishProficiencyRequirement">English Proficiency Requirement</Label>
+								<Label htmlFor="englishProficiencyRequirement">
+									English Proficiency Requirement
+								</Label>
 								<Input
 									id="englishProficiencyRequirement"
 									value={englishProficiencyRequirement}
-									onChange={(e) => setEnglishProficiencyRequirement(e.target.value)}
+									onChange={(e) =>
+										setEnglishProficiencyRequirement(e.target.value)
+									}
 									placeholder="e.g., B1, C1 in English"
 									disabled={isLoading}
 								/>
 							</div>
 
 							<div className="space-y-2 md:col-span-2">
-								<Label htmlFor="admissionRequirement">Other Admission Requirements</Label>
+								<Label htmlFor="admissionRequirement">
+									Other Admission Requirements
+								</Label>
 								<textarea
 									id="admissionRequirement"
 									value={admissionRequirement}
@@ -623,10 +641,7 @@ export default function EditProgramPage() {
 					>
 						Cancel
 					</Button>
-					<Button
-						type="submit"
-						disabled={isLoading || studyTypes.length === 0}
-					>
+					<Button type="submit" disabled={isLoading || studyTypes.length === 0}>
 						{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 						Update Program
 					</Button>

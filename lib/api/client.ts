@@ -1,8 +1,42 @@
-import type { RefreshTokenResponse } from "../types/admin";
 import { useAuthStore } from "../store/authStore";
+import type { RefreshTokenResponse } from "../types/admin";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 const isDev = process.env.NODE_ENV === "development";
+
+// Token lifetime in seconds (matches backend JWT config)
+export const TOKEN_LIFETIME_SECONDS = 900; // 15 minutes
+
+// Retry configuration for token refresh
+const MAX_REFRESH_RETRIES = 3;
+const RETRY_BASE_DELAY_MS = 1000; // 1s, 2s, 4s exponential backoff
+
+/**
+ * Sleep utility for retry delays
+ */
+function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Check if an error is retryable (network errors, 5xx server errors)
+ * 4xx errors (like invalid token) should not be retried
+ */
+function isRetryableError(error: unknown, status?: number): boolean {
+	// Network errors are retryable
+	if (error instanceof TypeError && error.message.includes("fetch")) {
+		return true;
+	}
+	// 5xx server errors are retryable
+	if (status && status >= 500) {
+		return true;
+	}
+	// Timeout errors are retryable
+	if (error instanceof Error && error.message.includes("timeout")) {
+		return true;
+	}
+	return false;
+}
 
 type RequestMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
@@ -83,7 +117,13 @@ export class ApiError extends Error {
 	}
 }
 
-async function refreshAccessToken(): Promise<string | null> {
+/**
+ * Attempt to refresh the access token using the refresh token
+ * Includes retry logic with exponential backoff for transient failures
+ */
+export async function refreshAccessToken(
+	retryCount = 0,
+): Promise<string | null> {
 	const { refreshToken, setTokens, logout } = useAuthStore.getState();
 
 	if (!refreshToken) {
@@ -100,7 +140,20 @@ async function refreshAccessToken(): Promise<string | null> {
 			body: JSON.stringify({ refreshToken }),
 		});
 
+		// Check if error is retryable (5xx server errors)
 		if (!response.ok) {
+			if (
+				retryCount < MAX_REFRESH_RETRIES &&
+				isRetryableError(null, response.status)
+			) {
+				const delay = RETRY_BASE_DELAY_MS * 2 ** retryCount;
+				if (isDev)
+					console.log(
+						`Token refresh failed with ${response.status}, retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_REFRESH_RETRIES})`,
+					);
+				await sleep(delay);
+				return refreshAccessToken(retryCount + 1);
+			}
 			throw new Error("Refresh failed");
 		}
 
@@ -119,6 +172,16 @@ async function refreshAccessToken(): Promise<string | null> {
 
 		return accessToken;
 	} catch (error) {
+		// Retry on network/transient errors
+		if (retryCount < MAX_REFRESH_RETRIES && isRetryableError(error)) {
+			const delay = RETRY_BASE_DELAY_MS * 2 ** retryCount;
+			if (isDev)
+				console.log(
+					`Token refresh error, retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_REFRESH_RETRIES})`,
+				);
+			await sleep(delay);
+			return refreshAccessToken(retryCount + 1);
+		}
 		if (isDev) {
 			console.error("🔄 Token refresh failed:", error);
 		}

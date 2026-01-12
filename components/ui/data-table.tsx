@@ -1,19 +1,19 @@
 "use client";
 
-import * as React from "react";
 import {
 	type ColumnDef,
 	type ColumnFiltersState,
-	type SortingState,
-	type VisibilityState,
-	type OnChangeFn,
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
+	type OnChangeFn,
+	type SortingState,
 	useReactTable,
+	type VisibilityState,
 } from "@tanstack/react-table";
+import * as React from "react";
 
 import {
 	Table,
@@ -41,7 +41,9 @@ export function DataTable<TData, TValue>({
 	onSortingChange: externalOnSortingChange,
 	manualPagination = false,
 }: DataTableProps<TData, TValue>) {
-	const [internalSorting, setInternalSorting] = React.useState<SortingState>([]);
+	const [internalSorting, setInternalSorting] = React.useState<SortingState>(
+		[],
+	);
 	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
 		[],
 	);
@@ -49,9 +51,12 @@ export function DataTable<TData, TValue>({
 		React.useState<VisibilityState>({});
 
 	// Use external sorting state if provided (server-side), otherwise use internal state (client-side)
-	const isServerSide = externalSorting !== undefined && externalOnSortingChange !== undefined;
+	const isServerSide =
+		externalSorting !== undefined && externalOnSortingChange !== undefined;
 	const sorting = isServerSide ? externalSorting : internalSorting;
-	const onSortingChange = isServerSide ? externalOnSortingChange : setInternalSorting;
+	const onSortingChange = isServerSide
+		? externalOnSortingChange
+		: setInternalSorting;
 
 	const table = useReactTable({
 		data,
@@ -60,9 +65,13 @@ export function DataTable<TData, TValue>({
 		onColumnFiltersChange: setColumnFilters,
 		getCoreRowModel: getCoreRowModel(),
 		// Only use client-side pagination when not using server-side pagination
-		...(manualPagination ? { manualPagination: true } : { getPaginationRowModel: getPaginationRowModel() }),
+		...(manualPagination
+			? { manualPagination: true }
+			: { getPaginationRowModel: getPaginationRowModel() }),
 		// Only use client-side sorting model when not using server-side sorting
-		...(isServerSide ? { manualSorting: true } : { getSortedRowModel: getSortedRowModel() }),
+		...(isServerSide
+			? { manualSorting: true }
+			: { getSortedRowModel: getSortedRowModel() }),
 		getFilteredRowModel: getFilteredRowModel(),
 		onColumnVisibilityChange: setColumnVisibility,
 		state: {

@@ -142,7 +142,9 @@ export function ImageUpload({
 						"flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-6 transition-colors",
 						isDragOver && "border-primary bg-primary/5",
 						disabled && "opacity-50 cursor-not-allowed",
-						!disabled && !isUploading && "cursor-pointer hover:border-primary/50",
+						!disabled &&
+							!isUploading &&
+							"cursor-pointer hover:border-primary/50",
 					)}
 					onClick={() => {
 						if (!disabled && !isUploading) {
@@ -168,7 +170,9 @@ export function ImageUpload({
 					{isUploading ? (
 						<>
 							<Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
-							<span className="text-sm text-muted-foreground">Uploading...</span>
+							<span className="text-sm text-muted-foreground">
+								Uploading...
+							</span>
 						</>
 					) : (
 						<>
@@ -188,9 +192,7 @@ export function ImageUpload({
 					)}
 				</div>
 			)}
-			{error && (
-				<p className="text-sm text-destructive">{error}</p>
-			)}
+			{error && <p className="text-sm text-destructive">{error}</p>}
 		</div>
 	);
 }

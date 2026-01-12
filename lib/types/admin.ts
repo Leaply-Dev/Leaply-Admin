@@ -80,10 +80,10 @@ export interface UniversityAdminResponse {
 	// Ranking ranges (min/max for QS and Times, single value for National)
 	rankingQsMin: number | null;
 	rankingQsMax: number | null;
-	rankingQsDisplay: string | null;  // "150" or "501-600"
+	rankingQsDisplay: string | null; // "150" or "501-600"
 	rankingTimesMin: number | null;
 	rankingTimesMax: number | null;
-	rankingTimesDisplay: string | null;  // "150" or "501-600"
+	rankingTimesDisplay: string | null; // "150" or "501-600"
 	rankingNational: number | null;
 	primaryLanguage: string;
 	logoUrl: string | null;
@@ -238,14 +238,9 @@ export interface IntakeCreateRequest {
 export type IntakeUpdateRequest = Partial<IntakeCreateRequest>;
 
 // Scholarship Admin
-export type ScholarshipSourceType =
-	| "university"
-	| "government"
-	| "foundation";
+export type ScholarshipSourceType = "university" | "government" | "foundation";
 
-export type ScholarshipCoverageType =
-	| "full_funded"
-	| "partial_funded";
+export type ScholarshipCoverageType = "full_funded" | "partial_funded";
 
 export type ScholarshipCoverageDuration =
 	| "first_year"
@@ -426,14 +421,14 @@ export interface RegionOption {
 	value: string;
 	label: string;
 	labelVi: string;
-	countries: string[];  // Country values for this region
+	countries: string[]; // Country values for this region
 }
 
 export interface CountryOption {
 	value: string;
 	label: string;
 	labelVi: string;
-	region: string;  // Region value this country belongs to
+	region: string; // Region value this country belongs to
 }
 
 export interface DropdownOptionsResponse {

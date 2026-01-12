@@ -263,7 +263,9 @@ export async function getScholarships(
 export async function getScholarship(
 	id: string,
 ): Promise<ScholarshipAdminResponse> {
-	return apiClient.get<ScholarshipAdminResponse>(`/v1/admin/scholarships/${id}`);
+	return apiClient.get<ScholarshipAdminResponse>(
+		`/v1/admin/scholarships/${id}`,
+	);
 }
 
 export async function createScholarship(

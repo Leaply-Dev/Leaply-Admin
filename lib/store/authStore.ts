@@ -93,14 +93,20 @@ export const useAuthStore = create<AuthState>()(
 );
 
 // Sync auth state to cookies for potential middleware use
+// Only set cookie when authenticated, remove when not (prevents stale cookie issues)
 useAuthStore.subscribe((state) => {
-	const authState = {
-		isAuthenticated: state.isAuthenticated,
-		role: state.profile?.role,
-	};
-	Cookies.set("leaply-admin-auth-state", JSON.stringify(authState), {
-		expires: 7,
-		path: "/",
-		sameSite: "lax",
-	});
+	if (state.isAuthenticated) {
+		const authState = {
+			isAuthenticated: state.isAuthenticated,
+			role: state.profile?.role,
+		};
+		Cookies.set("leaply-admin-auth-state", JSON.stringify(authState), {
+			expires: 7,
+			path: "/",
+			sameSite: "lax",
+		});
+	} else {
+		// When not authenticated, remove cookie entirely to prevent stale cookie issues
+		Cookies.remove("leaply-admin-auth-state", { path: "/" });
+	}
 });

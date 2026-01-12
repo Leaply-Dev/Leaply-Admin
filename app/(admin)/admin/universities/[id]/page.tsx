@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminApi } from "@/lib/api/adminApi";
-import type { RegionOption, CountryOption } from "@/lib/types/admin";
+import type { CountryOption, RegionOption } from "@/lib/types/admin";
 
 export default function EditUniversityPage() {
 	const params = useParams();
@@ -111,13 +111,17 @@ export default function EditUniversityPage() {
 				region: region || undefined,
 				type: type || undefined,
 				// Ranking ranges - if only min is provided, set max = min (exact value)
-				rankingQsMin: rankingQsMin ? Number.parseInt(rankingQsMin, 10) : undefined,
+				rankingQsMin: rankingQsMin
+					? Number.parseInt(rankingQsMin, 10)
+					: undefined,
 				rankingQsMax: rankingQsMax
 					? Number.parseInt(rankingQsMax, 10)
 					: rankingQsMin
 						? Number.parseInt(rankingQsMin, 10)
 						: undefined,
-				rankingTimesMin: rankingTimesMin ? Number.parseInt(rankingTimesMin, 10) : undefined,
+				rankingTimesMin: rankingTimesMin
+					? Number.parseInt(rankingTimesMin, 10)
+					: undefined,
 				rankingTimesMax: rankingTimesMax
 					? Number.parseInt(rankingTimesMax, 10)
 					: rankingTimesMin
@@ -230,7 +234,11 @@ export default function EditUniversityPage() {
 								>
 									<SelectTrigger>
 										<SelectValue placeholder="Select region">
-											{region && (regionOptions.find(r => r.value === region)?.label || regionOptions.find(r => r.label === region)?.label || region)}
+											{region &&
+												(regionOptions.find((r) => r.value === region)?.label ||
+													regionOptions.find((r) => r.label === region)
+														?.label ||
+													region)}
 										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
@@ -251,8 +259,17 @@ export default function EditUniversityPage() {
 									disabled={isLoading || !region}
 								>
 									<SelectTrigger>
-										<SelectValue placeholder={region ? "Select country" : "Select region first"}>
-											{country && (countryOptions.find(c => c.value === country)?.label || countryOptions.find(c => c.label === country)?.label || country)}
+										<SelectValue
+											placeholder={
+												region ? "Select country" : "Select region first"
+											}
+										>
+											{country &&
+												(countryOptions.find((c) => c.value === country)
+													?.label ||
+													countryOptions.find((c) => c.label === country)
+														?.label ||
+													country)}
 										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>

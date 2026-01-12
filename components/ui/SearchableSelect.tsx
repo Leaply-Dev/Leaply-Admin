@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, X, ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface SearchableSelectProps<T> {

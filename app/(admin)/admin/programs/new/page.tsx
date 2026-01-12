@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import {
 	Select,
 	SelectContent,
@@ -18,9 +19,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { adminApi } from "@/lib/api/adminApi";
-import type { UniversityAdminResponse, RegionOption, CountryOption } from "@/lib/types/admin";
+import type {
+	CountryOption,
+	RegionOption,
+	UniversityAdminResponse,
+} from "@/lib/types/admin";
 
 // Helper to format enum value to display label (e.g., "computer_science" -> "Computer Science")
 const formatEnumLabel = (value: string): string => {
@@ -36,7 +40,9 @@ export default function NewProgramPage() {
 	const [error, setError] = useState<string | null>(null);
 
 	// Dropdown options from API
-	const [prerequisiteMajorOptions, setPrerequisiteMajorOptions] = useState<string[]>([]);
+	const [prerequisiteMajorOptions, setPrerequisiteMajorOptions] = useState<
+		string[]
+	>([]);
 	const [regionOptions, setRegionOptions] = useState<RegionOption[]>([]);
 	const [countryOptions, setCountryOptions] = useState<CountryOption[]>([]);
 
@@ -76,7 +82,8 @@ export default function NewProgramPage() {
 	// New fields
 	const [prerequisiteMajors, setPrerequisiteMajors] = useState<string[]>([]);
 	const [minWorkExperienceYears, setMinWorkExperienceYears] = useState("");
-	const [englishProficiencyRequirement, setEnglishProficiencyRequirement] = useState("");
+	const [englishProficiencyRequirement, setEnglishProficiencyRequirement] =
+		useState("");
 	const [admissionRequirement, setAdmissionRequirement] = useState("");
 
 	const handleUniversityChange = (
@@ -139,20 +146,21 @@ export default function NewProgramPage() {
 				requirements:
 					gpaMinimum || ieltsMinimum || toeflMinimum
 						? {
-							gpaMinimum: gpaMinimum
-								? Number.parseFloat(gpaMinimum)
-								: undefined,
-							ieltsMinimum: ieltsMinimum
-								? Number.parseFloat(ieltsMinimum)
-								: undefined,
-							toeflMinimum: toeflMinimum
-								? Number.parseInt(toeflMinimum, 10)
-								: undefined,
-						}
+								gpaMinimum: gpaMinimum
+									? Number.parseFloat(gpaMinimum)
+									: undefined,
+								ieltsMinimum: ieltsMinimum
+									? Number.parseFloat(ieltsMinimum)
+									: undefined,
+								toeflMinimum: toeflMinimum
+									? Number.parseInt(toeflMinimum, 10)
+									: undefined,
+							}
 						: undefined,
 				programUrl: programUrl || undefined,
 				description: description || undefined,
-				englishProficiencyRequirement: englishProficiencyRequirement || undefined,
+				englishProficiencyRequirement:
+					englishProficiencyRequirement || undefined,
 				admissionRequirement: admissionRequirement || undefined,
 			});
 			router.push("/admin/programs");
@@ -226,7 +234,8 @@ export default function NewProgramPage() {
 								>
 									<SelectTrigger>
 										<SelectValue placeholder="Select country">
-											{country && countryOptions.find(c => c.value === country)?.label}
+											{country &&
+												countryOptions.find((c) => c.value === country)?.label}
 										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
@@ -236,7 +245,10 @@ export default function NewProgramPage() {
 												{countryOptions
 													.filter((c) => c.region === region.value)
 													.map((countryOpt) => (
-														<SelectItem key={countryOpt.value} value={countryOpt.value}>
+														<SelectItem
+															key={countryOpt.value}
+															value={countryOpt.value}
+														>
 															{countryOpt.label}
 														</SelectItem>
 													))}
@@ -430,7 +442,8 @@ export default function NewProgramPage() {
 								</div>
 								{prerequisiteMajors.length > 0 && (
 									<p className="text-sm text-muted-foreground mt-2">
-										Selected: {prerequisiteMajors.map(formatEnumLabel).join(", ")}
+										Selected:{" "}
+										{prerequisiteMajors.map(formatEnumLabel).join(", ")}
 									</p>
 								)}
 							</div>
@@ -486,18 +499,24 @@ export default function NewProgramPage() {
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="englishProficiencyRequirement">English Proficiency Requirement</Label>
+								<Label htmlFor="englishProficiencyRequirement">
+									English Proficiency Requirement
+								</Label>
 								<Input
 									id="englishProficiencyRequirement"
 									value={englishProficiencyRequirement}
-									onChange={(e) => setEnglishProficiencyRequirement(e.target.value)}
+									onChange={(e) =>
+										setEnglishProficiencyRequirement(e.target.value)
+									}
 									placeholder="e.g., B1, C1 in English"
 									disabled={isLoading}
 								/>
 							</div>
 
 							<div className="space-y-2 md:col-span-2">
-								<Label htmlFor="admissionRequirement">Other Admission Requirements</Label>
+								<Label htmlFor="admissionRequirement">
+									Other Admission Requirements
+								</Label>
 								<textarea
 									id="admissionRequirement"
 									value={admissionRequirement}
