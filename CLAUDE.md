@@ -10,22 +10,22 @@ Leaply Admin is a Next.js 16 admin dashboard for managing universities, programs
 
 ```bash
 # Development
-npm run dev          # Start dev server on port 3001 (auto-generates API)
+bun dev              # Start dev server on port 3001 (auto-generates API)
 
 # Build
-npm run build        # Production build (auto-generates API)
+bun run build        # Production build (auto-generates API)
 
 # API Generation (Orval)
-npm run generate:api       # Generate API client from OpenAPI spec
-npm run generate:api:watch # Watch mode for API generation
+bun generate:api       # Generate API client from OpenAPI spec
+bun generate:api:watch # Watch mode for API generation
 
 # Linting & Formatting (Biome)
-npm run lint         # Lint and auto-fix
-npm run lint:check   # Lint without fixing
-npm run format       # Format and auto-fix
-npm run format:check # Format check only
-npm run check        # Lint + format with auto-fix
-npm run check:ci     # CI check (no auto-fix)
+bun lint             # Lint and auto-fix
+bun lint:check       # Lint without fixing
+bun format           # Format and auto-fix
+bun format:check     # Format check only
+bun check            # Lint + format with auto-fix
+bun check:ci         # CI check (no auto-fix)
 ```
 
 ## Architecture
@@ -42,7 +42,7 @@ npm run check:ci     # CI check (no auto-fix)
 - **React Query hooks**: Auto-generated `useGetUniversities()`, `useCreateUniversity()`, etc.
 - **Zod validation**: Runtime validation schemas in `lib/generated/api/zod/`
 - **Custom mutator**: `lib/api/mutator.ts` handles auth token injection and refresh
-- **Query client**: `lib/api/queryClient.ts` with 5-minute stale time
+- **Query client**: Created inline in `app/providers.tsx` with useState (Next.js pattern)
 
 ### Generated Files Structure
 ```
@@ -87,7 +87,7 @@ lib/generated/api/
 ### Key Files
 - `orval.config.ts`: Orval configuration for API generation
 - `lib/api/mutator.ts`: Custom fetch wrapper for Orval with auth handling
-- `lib/api/queryClient.ts`: React Query client configuration
+- `app/providers.tsx`: React Query provider with QueryClient
 - `lib/generated/api/endpoints/admin/admin.ts`: Generated admin API hooks
 - `lib/api/adminApi.ts`: Legacy manual API functions (for gradual migration)
 - `lib/types/admin.ts`: Legacy TypeScript types (use generated models instead)
