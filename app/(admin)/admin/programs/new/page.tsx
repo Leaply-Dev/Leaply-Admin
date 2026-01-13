@@ -67,11 +67,13 @@ export default function NewProgramPage() {
 	const [country, setCountry] = useState("");
 	const [degreeType, setDegreeType] = useState("");
 	const [degreeName, setDegreeName] = useState("");
-	const [durationMonths, setDurationMonths] = useState("");
+	const [durationMonthsMin, setDurationMonthsMin] = useState("");
+	const [durationMonthsMax, setDurationMonthsMax] = useState("");
 	const [deliveryMode, setDeliveryMode] = useState("");
 	const [studyTypes, setStudyTypes] = useState<string[]>(["Full-time"]);
 	const [language, setLanguage] = useState("english");
 	const [tuitionAnnualUsd, setTuitionAnnualUsd] = useState("");
+	const [tuitionCurrency, setTuitionCurrency] = useState("USD");
 	const [applicationFeeUsd, setApplicationFeeUsd] = useState("");
 	const [scholarshipAvailable, setScholarshipAvailable] = useState("false");
 	const [gpaMinimum, setGpaMinimum] = useState("");
@@ -125,8 +127,11 @@ export default function NewProgramPage() {
 				name,
 				degreeType,
 				degreeName: degreeName || undefined,
-				durationMonths: durationMonths
-					? Number.parseInt(durationMonths, 10)
+				durationMonthsMin: durationMonthsMin
+					? Number.parseInt(durationMonthsMin, 10)
+					: undefined,
+				durationMonthsMax: durationMonthsMax
+					? Number.parseInt(durationMonthsMax, 10)
 					: undefined,
 				deliveryMode: deliveryMode || undefined,
 				studyTypes: studyTypes.length > 0 ? studyTypes : undefined,
@@ -139,6 +144,7 @@ export default function NewProgramPage() {
 				tuition: tuitionAnnualUsd
 					? { annualUsd: Number.parseInt(tuitionAnnualUsd, 10) }
 					: undefined,
+				tuitionCurrency: tuitionCurrency || undefined,
 				applicationFeeUsd: applicationFeeUsd
 					? Number.parseInt(applicationFeeUsd, 10)
 					: undefined,
@@ -290,14 +296,28 @@ export default function NewProgramPage() {
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="durationMonths">Duration (months)</Label>
-								<Input
-									id="durationMonths"
-									type="number"
-									value={durationMonths}
-									onChange={(e) => setDurationMonths(e.target.value)}
-									disabled={isLoading}
-								/>
+								<Label>Duration (months)</Label>
+								<div className="flex gap-2 items-center">
+									<Input
+										id="durationMonthsMin"
+										type="number"
+										value={durationMonthsMin}
+										onChange={(e) => setDurationMonthsMin(e.target.value)}
+										placeholder="Min"
+										disabled={isLoading}
+										className="flex-1"
+									/>
+									<span className="text-muted-foreground">-</span>
+									<Input
+										id="durationMonthsMax"
+										type="number"
+										value={durationMonthsMax}
+										onChange={(e) => setDurationMonthsMax(e.target.value)}
+										placeholder="Max (optional)"
+										disabled={isLoading}
+										className="flex-1"
+									/>
+								</div>
 							</div>
 
 							<div className="space-y-2">
@@ -353,8 +373,38 @@ export default function NewProgramPage() {
 										<SelectItem value="german">German</SelectItem>
 										<SelectItem value="french">French</SelectItem>
 										<SelectItem value="spanish">Spanish</SelectItem>
+										<SelectItem value="dutch">Dutch</SelectItem>
+										<SelectItem value="italian">Italian</SelectItem>
+										<SelectItem value="japanese">Japanese</SelectItem>
+										<SelectItem value="chinese">Chinese</SelectItem>
+										<SelectItem value="korean">Korean</SelectItem>
+										<SelectItem value="portuguese">Portuguese</SelectItem>
+										<SelectItem value="norwegian">Norwegian</SelectItem>
 									</SelectContent>
 								</Select>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="programUrl">Program URL</Label>
+								<Input
+									id="programUrl"
+									type="url"
+									value={programUrl}
+									onChange={(e) => setProgramUrl(e.target.value)}
+									placeholder="https://..."
+									disabled={isLoading}
+								/>
+							</div>
+
+							<div className="space-y-2 md:col-span-2">
+								<Label htmlFor="description">Description</Label>
+								<textarea
+									id="description"
+									value={description}
+									onChange={(e) => setDescription(e.target.value)}
+									disabled={isLoading}
+									className="w-full min-h-[100px] px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+								/>
 							</div>
 						</div>
 					</CardContent>
@@ -367,7 +417,7 @@ export default function NewProgramPage() {
 					<CardContent>
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">
-								<Label htmlFor="tuitionAnnualUsd">Annual Tuition (USD)</Label>
+								<Label htmlFor="tuitionAnnualUsd">Annual Tuition</Label>
 								<Input
 									id="tuitionAnnualUsd"
 									type="number"
@@ -375,6 +425,31 @@ export default function NewProgramPage() {
 									onChange={(e) => setTuitionAnnualUsd(e.target.value)}
 									disabled={isLoading}
 								/>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="tuitionCurrency">Tuition Currency</Label>
+								<Select
+									value={tuitionCurrency}
+									onValueChange={setTuitionCurrency}
+									disabled={isLoading}
+								>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="USD">USD</SelectItem>
+										<SelectItem value="EUR">EUR</SelectItem>
+										<SelectItem value="GBP">GBP</SelectItem>
+										<SelectItem value="AUD">AUD</SelectItem>
+										<SelectItem value="CAD">CAD</SelectItem>
+										<SelectItem value="SGD">SGD</SelectItem>
+										<SelectItem value="CHF">CHF</SelectItem>
+										<SelectItem value="JPY">JPY</SelectItem>
+										<SelectItem value="NZD">NZD</SelectItem>
+										<SelectItem value="VND">VND</SelectItem>
+									</SelectContent>
+								</Select>
 							</div>
 
 							<div className="space-y-2">
@@ -524,37 +599,6 @@ export default function NewProgramPage() {
 									placeholder="e.g., Requires Master 1 before Master 2"
 									disabled={isLoading}
 									className="w-full min-h-[80px] px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-								/>
-							</div>
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader>
-						<CardTitle>Additional Information</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<div className="grid grid-cols-1 gap-4">
-							<div className="space-y-2">
-								<Label htmlFor="programUrl">Program URL</Label>
-								<Input
-									id="programUrl"
-									type="url"
-									value={programUrl}
-									onChange={(e) => setProgramUrl(e.target.value)}
-									disabled={isLoading}
-								/>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="description">Description</Label>
-								<textarea
-									id="description"
-									value={description}
-									onChange={(e) => setDescription(e.target.value)}
-									disabled={isLoading}
-									className="w-full min-h-[100px] px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 								/>
 							</div>
 						</div>

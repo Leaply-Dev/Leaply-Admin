@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -20,6 +20,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminApi } from "@/lib/api/adminApi";
 import type {
+	OtherTest,
 	RequiredDocument,
 	ScholarshipCoverageDuration,
 	ScholarshipCoverageType,
@@ -83,25 +84,32 @@ export default function EditScholarshipPage() {
 		useState<ScholarshipCoverageType>("full_funded");
 	const [coverageDuration, setCoverageDuration] =
 		useState<ScholarshipCoverageDuration>("full_program");
+	const [coverageDurationOther, setCoverageDurationOther] = useState("");
 	const [coveragePercentage, setCoveragePercentage] = useState("");
-	const [coverageAmount, setCoverageAmount] = useState("");
+	const [coverageAmountMin, setCoverageAmountMin] = useState("");
+	const [coverageAmountMax, setCoverageAmountMax] = useState("");
 	const [coverageCurrency, setCoverageCurrency] = useState("USD");
+	const [coverageNotes, setCoverageNotes] = useState("");
 
 	// Eligibility & Requirements
 	const [eligibilityType, setEligibilityType] =
 		useState<ScholarshipEligibilityType>("merit");
 	const [eligibilityFocus, setEligibilityFocus] = useState<
-		ScholarshipEligibilityFocus | ""
-	>("academic");
+		ScholarshipEligibilityFocus[]
+	>(["academic"]);
 	const [minGpa, setMinGpa] = useState("");
 	const [gpaScale, setGpaScale] = useState("4.0");
 	const [minIelts, setMinIelts] = useState("");
 	const [minToefl, setMinToefl] = useState("");
+	const [minGre, setMinGre] = useState("");
+	const [minGmat, setMinGmat] = useState("");
+	const [otherTests, setOtherTests] = useState<OtherTest[]>([]);
 	const [workExperienceRequired, setWorkExperienceRequired] = useState(false);
 	const [minWorkExperienceYears, setMinWorkExperienceYears] = useState("");
 	const [requiredDocuments, setRequiredDocuments] = useState<
 		RequiredDocument[]
 	>([]);
+	const [requiredDocumentsOther, setRequiredDocumentsOther] = useState("");
 	const [englishProficiencyRequirement, setEnglishProficiencyRequirement] =
 		useState("");
 	const [applyWithProgram, setApplyWithProgram] = useState(false);
@@ -139,21 +147,28 @@ export default function EditScholarshipPage() {
 
 				setCoverageType(scholarship.coverageType);
 				setCoverageDuration(scholarship.coverageDuration);
+				setCoverageDurationOther(scholarship.coverageDurationOther || "");
 				setCoveragePercentage(scholarship.coveragePercentage?.toString() || "");
-				setCoverageAmount(scholarship.coverageAmount?.toString() || "");
+				setCoverageAmountMin(scholarship.coverageAmountMin?.toString() || "");
+				setCoverageAmountMax(scholarship.coverageAmountMax?.toString() || "");
 				setCoverageCurrency(scholarship.coverageCurrency || "USD");
+				setCoverageNotes(scholarship.coverageNotes || "");
 
 				setEligibilityType(scholarship.eligibilityType);
-				setEligibilityFocus(scholarship.eligibilityFocus || "");
+				setEligibilityFocus(scholarship.eligibilityFocus || ["academic"]);
 				setMinGpa(scholarship.minGpa?.toString() || "");
 				setGpaScale(scholarship.gpaScale?.toString() || "4.0");
 				setMinIelts(scholarship.minIelts?.toString() || "");
 				setMinToefl(scholarship.minToefl?.toString() || "");
+				setMinGre(scholarship.minGre?.toString() || "");
+				setMinGmat(scholarship.minGmat?.toString() || "");
+				setOtherTests(scholarship.otherTests || []);
 				setWorkExperienceRequired(scholarship.workExperienceRequired);
 				setMinWorkExperienceYears(
 					scholarship.minWorkExperienceYears?.toString() || "",
 				);
 				setRequiredDocuments(scholarship.requiredDocuments || []);
+				setRequiredDocumentsOther(scholarship.requiredDocumentsOther || "");
 				setEnglishProficiencyRequirement(
 					scholarship.englishProficiencyRequirement || "",
 				);
@@ -220,6 +235,35 @@ export default function EditScholarshipPage() {
 		}
 	};
 
+	const handleEligibilityFocusChange = (
+		focus: ScholarshipEligibilityFocus,
+		checked: boolean,
+	) => {
+		if (checked) {
+			setEligibilityFocus([...eligibilityFocus, focus]);
+		} else {
+			setEligibilityFocus(eligibilityFocus.filter((f) => f !== focus));
+		}
+	};
+
+	const handleAddOtherTest = () => {
+		setOtherTests([...otherTests, { name: "", value: "" }]);
+	};
+
+	const handleRemoveOtherTest = (index: number) => {
+		setOtherTests(otherTests.filter((_, i) => i !== index));
+	};
+
+	const handleOtherTestChange = (
+		index: number,
+		field: "name" | "value",
+		value: string,
+	) => {
+		const updated = [...otherTests];
+		updated[index][field] = value;
+		setOtherTests(updated);
+	};
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsLoading(true);
@@ -237,23 +281,39 @@ export default function EditScholarshipPage() {
 				eligibleFields: allFieldsEligible ? undefined : eligibleFields,
 				coverageType,
 				coverageDuration,
+				coverageDurationOther:
+					coverageDuration === "other" ? coverageDurationOther : undefined,
 				coveragePercentage: coveragePercentage
 					? Number(coveragePercentage)
 					: undefined,
-				coverageAmount: coverageAmount ? Number(coverageAmount) : undefined,
+				coverageAmountMin: coverageAmountMin
+					? Number(coverageAmountMin)
+					: undefined,
+				coverageAmountMax: coverageAmountMax
+					? Number(coverageAmountMax)
+					: undefined,
 				coverageCurrency,
+				coverageNotes: coverageNotes || undefined,
 				eligibilityType,
-				eligibilityFocus: eligibilityFocus || undefined,
+				eligibilityFocus:
+					eligibilityFocus.length > 0 ? eligibilityFocus : undefined,
 				minGpa: minGpa ? Number(minGpa) : undefined,
 				gpaScale: Number(gpaScale),
 				minIelts: minIelts ? Number(minIelts) : undefined,
 				minToefl: minToefl ? Number(minToefl) : undefined,
+				minGre: minGre ? Number(minGre) : undefined,
+				minGmat: minGmat ? Number(minGmat) : undefined,
+				otherTests:
+					otherTests.filter((t) => t.name && t.value).length > 0
+						? otherTests.filter((t) => t.name && t.value)
+						: undefined,
 				workExperienceRequired,
 				minWorkExperienceYears: minWorkExperienceYears
 					? Number(minWorkExperienceYears)
 					: undefined,
 				requiredDocuments:
 					requiredDocuments.length > 0 ? requiredDocuments : undefined,
+				requiredDocumentsOther: requiredDocumentsOther || undefined,
 				englishProficiencyRequirement:
 					englishProficiencyRequirement || undefined,
 				applyWithProgram,
@@ -526,9 +586,25 @@ export default function EditScholarshipPage() {
 										<SelectItem value="full_program">Full Program</SelectItem>
 										<SelectItem value="one_time">One-time Grant</SelectItem>
 										<SelectItem value="not_specified">Not Specified</SelectItem>
+										<SelectItem value="other">Other</SelectItem>
 									</SelectContent>
 								</Select>
 							</div>
+
+							{coverageDuration === "other" && (
+								<div className="space-y-2">
+									<Label htmlFor="coverageDurationOther">
+										Coverage Duration (specify)
+									</Label>
+									<Input
+										id="coverageDurationOther"
+										value={coverageDurationOther}
+										onChange={(e) => setCoverageDurationOther(e.target.value)}
+										placeholder="e.g., 2 semesters"
+										disabled={isLoading}
+									/>
+								</div>
+							)}
 
 							{coverageType === "partial_funded" && (
 								<div className="space-y-2">
@@ -549,14 +625,28 @@ export default function EditScholarshipPage() {
 							)}
 
 							<div className="space-y-2">
-								<Label htmlFor="coverageAmount">Coverage Amount</Label>
-								<Input
-									id="coverageAmount"
-									type="number"
-									value={coverageAmount}
-									onChange={(e) => setCoverageAmount(e.target.value)}
-									disabled={isLoading}
-								/>
+								<Label>Coverage Amount</Label>
+								<div className="flex gap-2 items-center">
+									<Input
+										id="coverageAmountMin"
+										type="number"
+										value={coverageAmountMin}
+										onChange={(e) => setCoverageAmountMin(e.target.value)}
+										placeholder="Min"
+										disabled={isLoading}
+										className="flex-1"
+									/>
+									<span className="text-muted-foreground">-</span>
+									<Input
+										id="coverageAmountMax"
+										type="number"
+										value={coverageAmountMax}
+										onChange={(e) => setCoverageAmountMax(e.target.value)}
+										placeholder="Max (optional)"
+										disabled={isLoading}
+										className="flex-1"
+									/>
+								</div>
 							</div>
 
 							<div className="space-y-2">
@@ -574,10 +664,26 @@ export default function EditScholarshipPage() {
 										<SelectItem value="EUR">EUR</SelectItem>
 										<SelectItem value="GBP">GBP</SelectItem>
 										<SelectItem value="AUD">AUD</SelectItem>
+										<SelectItem value="CAD">CAD</SelectItem>
 										<SelectItem value="SGD">SGD</SelectItem>
+										<SelectItem value="CHF">CHF</SelectItem>
+										<SelectItem value="JPY">JPY</SelectItem>
+										<SelectItem value="NZD">NZD</SelectItem>
 										<SelectItem value="VND">VND</SelectItem>
 									</SelectContent>
 								</Select>
+							</div>
+
+							<div className="space-y-2 md:col-span-2">
+								<Label htmlFor="coverageNotes">Coverage Notes</Label>
+								<textarea
+									id="coverageNotes"
+									value={coverageNotes}
+									onChange={(e) => setCoverageNotes(e.target.value)}
+									placeholder="Additional notes about coverage..."
+									disabled={isLoading}
+									className="w-full min-h-[80px] px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+								/>
 							</div>
 						</div>
 					</CardContent>
@@ -610,30 +716,41 @@ export default function EditScholarshipPage() {
 							</div>
 
 							{eligibilityType === "merit" && (
-								<div className="space-y-2">
-									<Label htmlFor="eligibilityFocus">Eligibility Focus</Label>
-									<Select
-										value={eligibilityFocus}
-										onValueChange={(v) =>
-											setEligibilityFocus(v as ScholarshipEligibilityFocus)
-										}
-										disabled={isLoading}
-									>
-										<SelectTrigger>
-											<SelectValue placeholder="Select focus" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="academic">
-												Academic Excellence
-											</SelectItem>
-											<SelectItem value="holistic">Holistic Review</SelectItem>
-											<SelectItem value="leadership">Leadership</SelectItem>
-											<SelectItem value="research">Research</SelectItem>
-											<SelectItem value="community_service">
-												Community Service
-											</SelectItem>
-										</SelectContent>
-									</Select>
+								<div className="space-y-2 md:col-span-2">
+									<Label>Eligibility Focus</Label>
+									<div className="flex flex-wrap gap-4">
+										{(
+											[
+												{ value: "academic", label: "Academic Excellence" },
+												{ value: "holistic", label: "Holistic Review" },
+												{ value: "leadership", label: "Leadership" },
+												{ value: "research", label: "Research" },
+												{
+													value: "community_service",
+													label: "Community Service",
+												},
+											] as const
+										).map((focus) => (
+											<label
+												key={focus.value}
+												className="flex items-center gap-2"
+											>
+												<input
+													type="checkbox"
+													checked={eligibilityFocus.includes(focus.value)}
+													onChange={(e) =>
+														handleEligibilityFocusChange(
+															focus.value,
+															e.target.checked,
+														)
+													}
+													disabled={isLoading}
+													className="rounded border-input"
+												/>
+												<span>{focus.label}</span>
+											</label>
+										))}
+									</div>
 								</div>
 							)}
 
@@ -697,6 +814,84 @@ export default function EditScholarshipPage() {
 								/>
 							</div>
 
+							<div className="space-y-2">
+								<Label htmlFor="minGre">Minimum GRE</Label>
+								<Input
+									id="minGre"
+									type="number"
+									min={0}
+									max={340}
+									value={minGre}
+									onChange={(e) => setMinGre(e.target.value)}
+									placeholder="e.g., 320"
+									disabled={isLoading}
+								/>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="minGmat">Minimum GMAT</Label>
+								<Input
+									id="minGmat"
+									type="number"
+									min={0}
+									max={800}
+									value={minGmat}
+									onChange={(e) => setMinGmat(e.target.value)}
+									placeholder="e.g., 700"
+									disabled={isLoading}
+								/>
+							</div>
+
+							<div className="space-y-2 md:col-span-2">
+								<Label>Other Tests</Label>
+								<div className="space-y-2">
+									{otherTests.map((test, index) => (
+										<div
+											key={`other-test-${index}`}
+											className="flex gap-2 items-center"
+										>
+											<Input
+												value={test.name}
+												onChange={(e) =>
+													handleOtherTestChange(index, "name", e.target.value)
+												}
+												placeholder="Test name (e.g., SAT)"
+												disabled={isLoading}
+												className="flex-1"
+											/>
+											<Input
+												value={test.value}
+												onChange={(e) =>
+													handleOtherTestChange(index, "value", e.target.value)
+												}
+												placeholder="Requirement (e.g., 1400+)"
+												disabled={isLoading}
+												className="flex-1"
+											/>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												onClick={() => handleRemoveOtherTest(index)}
+												disabled={isLoading}
+											>
+												<X className="h-4 w-4" />
+											</Button>
+										</div>
+									))}
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={handleAddOtherTest}
+										disabled={isLoading}
+									>
+										<Plus className="h-4 w-4 mr-1" />
+										Add Test
+									</Button>
+								</div>
+							</div>
+
 							<div className="space-y-2 md:col-span-2">
 								<label className="flex items-center gap-2">
 									<input
@@ -743,6 +938,18 @@ export default function EditScholarshipPage() {
 											<span className="text-sm">{doc.label}</span>
 										</label>
 									))}
+								</div>
+								<div className="mt-2">
+									<Label htmlFor="requiredDocumentsOther">
+										Other Documents
+									</Label>
+									<Input
+										id="requiredDocumentsOther"
+										value={requiredDocumentsOther}
+										onChange={(e) => setRequiredDocumentsOther(e.target.value)}
+										placeholder="e.g., Writing samples, Art portfolio"
+										disabled={isLoading}
+									/>
 								</div>
 							</div>
 

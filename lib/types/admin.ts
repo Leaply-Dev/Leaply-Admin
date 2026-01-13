@@ -123,11 +123,14 @@ export interface ProgramAdminResponse {
 	universityId: string;
 	universityName: string;
 	name: string;
+	displayName: string | null;
+	useCustomDisplayName: boolean;
 	degreeType: string;
 	degreeName: string | null;
 	majorCategories: string[] | null;
 	majorSubcategory: string | null;
-	durationMonths: number | null;
+	durationMonthsMin: number | null;
+	durationMonthsMax: number | null;
 	deliveryMode: string | null;
 	studyTypes: string[] | null;
 	prerequisiteMajors: string[] | null;
@@ -139,6 +142,7 @@ export interface ProgramAdminResponse {
 		currency?: string;
 		amount?: number;
 	} | null;
+	tuitionCurrency: string;
 	applicationFeeUsd: number | null;
 	scholarshipAvailable: boolean;
 	scholarshipNotes: string | null;
@@ -167,9 +171,11 @@ export interface ProgramCreateRequest {
 	name: string;
 	degreeType: string;
 	degreeName?: string;
+	useCustomDisplayName?: boolean;
 	majorCategories?: string[];
 	majorSubcategory?: string;
-	durationMonths?: number;
+	durationMonthsMin?: number;
+	durationMonthsMax?: number;
 	deliveryMode?: string;
 	studyTypes?: string[];
 	prerequisiteMajors?: string[];
@@ -181,6 +187,7 @@ export interface ProgramCreateRequest {
 		currency?: string;
 		amount?: number;
 	};
+	tuitionCurrency?: string;
 	applicationFeeUsd?: number;
 	scholarshipAvailable?: boolean;
 	scholarshipNotes?: string;
@@ -247,7 +254,8 @@ export type ScholarshipCoverageDuration =
 	| "annual_renewable"
 	| "full_program"
 	| "one_time"
-	| "not_specified";
+	| "not_specified"
+	| "other";
 
 export type ScholarshipEligibilityType = "merit" | "need_based";
 
@@ -279,6 +287,12 @@ export interface ScholarshipAdditionalBenefits {
 	accommodation?: boolean;
 }
 
+// Other test type for dynamic test list
+export interface OtherTest {
+	name: string;
+	value: string;
+}
+
 export interface ScholarshipAdminResponse {
 	id: string;
 	name: string;
@@ -293,19 +307,26 @@ export interface ScholarshipAdminResponse {
 	eligibleFields: string[] | null;
 	coverageType: ScholarshipCoverageType;
 	coveragePercentage: number | null;
-	coverageAmount: number | null;
+	coverageAmountMin: number | null;
+	coverageAmountMax: number | null;
 	coverageCurrency: string;
 	coverageDuration: ScholarshipCoverageDuration;
+	coverageDurationOther: string | null;
+	coverageNotes: string | null;
 	additionalBenefits: ScholarshipAdditionalBenefits | null;
 	eligibilityType: ScholarshipEligibilityType;
-	eligibilityFocus: ScholarshipEligibilityFocus | null;
+	eligibilityFocus: ScholarshipEligibilityFocus[] | null;
 	minGpa: number | null;
 	gpaScale: number;
 	minIelts: number | null;
 	minToefl: number | null;
+	minGre: number | null;
+	minGmat: number | null;
+	otherTests: OtherTest[] | null;
 	workExperienceRequired: boolean;
 	minWorkExperienceYears: number | null;
 	requiredDocuments: RequiredDocument[];
+	requiredDocumentsOther: string | null;
 	nationalityEligible: string[] | null;
 	otherRequirements: string | null;
 	englishProficiencyRequirement: string | null;
@@ -335,19 +356,26 @@ export interface ScholarshipCreateRequest {
 	eligibleFields?: string[];
 	coverageType: ScholarshipCoverageType;
 	coveragePercentage?: number;
-	coverageAmount?: number;
+	coverageAmountMin?: number;
+	coverageAmountMax?: number;
 	coverageCurrency?: string;
 	coverageDuration?: ScholarshipCoverageDuration;
+	coverageDurationOther?: string;
+	coverageNotes?: string;
 	additionalBenefits?: ScholarshipAdditionalBenefits;
 	eligibilityType?: ScholarshipEligibilityType;
-	eligibilityFocus?: ScholarshipEligibilityFocus;
+	eligibilityFocus?: ScholarshipEligibilityFocus[];
 	minGpa?: number;
 	gpaScale?: number;
 	minIelts?: number;
 	minToefl?: number;
+	minGre?: number;
+	minGmat?: number;
+	otherTests?: OtherTest[];
 	workExperienceRequired?: boolean;
 	minWorkExperienceYears?: number;
 	requiredDocuments?: RequiredDocument[];
+	requiredDocumentsOther?: string;
 	nationalityEligible?: string[];
 	otherRequirements?: string;
 	englishProficiencyRequirement?: string;

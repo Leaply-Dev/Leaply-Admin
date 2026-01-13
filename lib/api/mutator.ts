@@ -233,7 +233,9 @@ export const customInstance = async <T>(
 	if (accessToken) {
 		requestHeaders.Authorization = `Bearer ${accessToken}`;
 	} else if (isDev) {
-		console.warn("No access token available for authenticated request (mutator)");
+		console.warn(
+			"No access token available for authenticated request (mutator)",
+		);
 	}
 
 	if (isDev) {
