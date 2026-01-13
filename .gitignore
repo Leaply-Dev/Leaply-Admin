@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Orval generated API client
+/lib/generated/
+
 ADMIN_FRONTEND_SPEC.md
 
 # Deployment guide (contains sensitive instructions)
