@@ -199,6 +199,7 @@ function FileUploadZone({
 				</CardHeader>
 				<CardContent className="space-y-4">
 					{!state.file ? (
+						// biome-ignore lint/a11y/noStaticElementInteractions: Drop zone requires drag events
 						<div
 							className={`
 								border-2 border-dashed rounded-lg p-8 text-center transition-colors

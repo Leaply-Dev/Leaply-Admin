@@ -59,6 +59,7 @@ export default function UniversitiesPage() {
 	}, [fetchUniversities]);
 
 	// Reset page when filters change
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Intentionally reset page when search changes
 	useEffect(() => {
 		setPage(0);
 	}, [search]);

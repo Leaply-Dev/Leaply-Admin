@@ -87,6 +87,7 @@ export default function UsersPage() {
 	}, [fetchUsers]);
 
 	// Reset page when filters change
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Intentionally reset page when filters change
 	useEffect(() => {
 		setPage(0);
 	}, [activeTab, sorting, roleFilter, search]);

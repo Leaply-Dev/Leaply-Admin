@@ -155,6 +155,7 @@ export interface ProgramAdminResponse {
 		toeflMinimum?: number;
 		greMinimum?: number;
 		gmatMinimum?: number;
+		otherTests?: OtherTest[];
 		workExperienceYears?: number;
 		otherRequirements?: string[];
 	} | null;
@@ -203,6 +204,7 @@ export interface ProgramCreateRequest {
 		toeflMinimum?: number;
 		greMinimum?: number;
 		gmatMinimum?: number;
+		otherTests?: OtherTest[];
 		workExperienceYears?: number;
 		otherRequirements?: string[];
 	};

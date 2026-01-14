@@ -65,6 +65,7 @@ export default function ProgramsPage() {
 	}, [fetchPrograms]);
 
 	// Reset page when filters change
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Intentionally reset page when search changes
 	useEffect(() => {
 		setPage(0);
 	}, [search]);

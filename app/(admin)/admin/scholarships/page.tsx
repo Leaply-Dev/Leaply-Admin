@@ -46,7 +46,7 @@ import type {
 	ScholarshipSourceType,
 } from "@/lib/types/admin";
 
-const SOURCE_TYPE_LABELS: Record<ScholarshipSourceType, string> = {
+const _SOURCE_TYPE_LABELS: Record<ScholarshipSourceType, string> = {
 	university: "University",
 	government: "Government",
 	foundation: "Foundation/NGO",
@@ -57,7 +57,7 @@ const COVERAGE_TYPE_LABELS: Record<ScholarshipCoverageType, string> = {
 	partial_funded: "Partial Funded",
 };
 
-const ELIGIBILITY_TYPE_LABELS: Record<ScholarshipEligibilityType, string> = {
+const _ELIGIBILITY_TYPE_LABELS: Record<ScholarshipEligibilityType, string> = {
 	merit: "Merit-based",
 	need_based: "Need-based",
 };
@@ -165,6 +165,7 @@ export default function ScholarshipsPage() {
 	}, [fetchScholarships]);
 
 	// Reset page when filters change
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Intentionally reset page when filters change
 	useEffect(() => {
 		setPage(0);
 	}, [search, sourceType, coverageType, eligibilityType, isActive]);

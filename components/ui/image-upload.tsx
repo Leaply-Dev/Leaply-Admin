@@ -38,6 +38,7 @@ export function ImageUpload({
 		return null;
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: validateFile is stable and doesn't need to be in deps
 	const handleFile = useCallback(
 		async (file: File) => {
 			const validationError = validateFile(file);
@@ -134,6 +135,7 @@ export function ImageUpload({
 					)}
 				</div>
 			) : (
+				// biome-ignore lint/a11y/noStaticElementInteractions: Drop zone requires drag/click handlers
 				<div
 					onDrop={handleDrop}
 					onDragOver={handleDragOver}

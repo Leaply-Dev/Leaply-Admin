@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Loader2, X } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminApi } from "@/lib/api/adminApi";
+import type { OtherTest } from "@/lib/types/admin";
 
 const PREREQUISITE_SUGGESTIONS = [
 	"Computer Science",
@@ -68,6 +69,7 @@ export default function EditProgramPage() {
 	const [admissionRequirement, setAdmissionRequirement] = useState("");
 	const [otherRequirements, setOtherRequirements] = useState<string[]>([]);
 	const [otherRequirementInput, setOtherRequirementInput] = useState("");
+	const [otherTests, setOtherTests] = useState<OtherTest[]>([]);
 
 	useEffect(() => {
 		const fetchProgram = async () => {
@@ -93,10 +95,10 @@ export default function EditProgramPage() {
 				setScholarshipAvailable(data.scholarshipAvailable ? "true" : "false");
 				setGpaMinimum(data.requirements?.gpaMinimum?.toString() || "");
 				setIeltsMinimum(data.requirements?.ieltsMinimum?.toString() || "");
-			setToeflMinimum(data.requirements?.toeflMinimum?.toString() || "");
-			setGreMinimum(data.requirements?.greMinimum?.toString() || "");
-			setGmatMinimum(data.requirements?.gmatMinimum?.toString() || "");
-			setProgramUrl(data.programUrl || "");
+				setToeflMinimum(data.requirements?.toeflMinimum?.toString() || "");
+				setGreMinimum(data.requirements?.greMinimum?.toString() || "");
+				setGmatMinimum(data.requirements?.gmatMinimum?.toString() || "");
+				setProgramUrl(data.programUrl || "");
 				setDescription(data.description || "");
 				// New fields
 				setPrerequisiteMajors(data.prerequisiteMajors || []);
@@ -108,6 +110,7 @@ export default function EditProgramPage() {
 				);
 				setAdmissionRequirement(data.admissionRequirement || "");
 				setOtherRequirements(data.requirements?.otherRequirements || []);
+				setOtherTests(data.requirements?.otherTests || []);
 			} catch (err) {
 				setError(err instanceof Error ? err.message : "Failed to load program");
 			} finally {
@@ -144,6 +147,24 @@ export default function EditProgramPage() {
 			e.preventDefault();
 			addPrerequisiteMajor(prerequisiteInput);
 		}
+	};
+
+	const handleAddOtherTest = () => {
+		setOtherTests([...otherTests, { name: "", value: "" }]);
+	};
+
+	const handleRemoveOtherTest = (index: number) => {
+		setOtherTests(otherTests.filter((_, i) => i !== index));
+	};
+
+	const handleOtherTestChange = (
+		index: number,
+		field: "name" | "value",
+		value: string,
+	) => {
+		const updated = [...otherTests];
+		updated[index][field] = value;
+		setOtherTests(updated);
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -186,33 +207,38 @@ export default function EditProgramPage() {
 					? Number.parseInt(applicationFeeUsd, 10)
 					: undefined,
 				scholarshipAvailable: scholarshipAvailable === "true",
-			requirements:
-				gpaMinimum ||
-				ieltsMinimum ||
-				toeflMinimum ||
-				greMinimum ||
-				gmatMinimum ||
-				otherRequirements.length > 0
-					? {
-							gpaMinimum: gpaMinimum
-								? Number.parseFloat(gpaMinimum)
-								: undefined,
-							ieltsMinimum: ieltsMinimum
-								? Number.parseFloat(ieltsMinimum)
-								: undefined,
-							toeflMinimum: toeflMinimum
-								? Number.parseInt(toeflMinimum, 10)
-								: undefined,
-							greMinimum: greMinimum
-								? Number.parseInt(greMinimum, 10)
-								: undefined,
-							gmatMinimum: gmatMinimum
-								? Number.parseInt(gmatMinimum, 10)
-								: undefined,
-							otherRequirements:
-								otherRequirements.length > 0 ? otherRequirements : undefined,
-						}
-					: undefined,
+				requirements:
+					gpaMinimum ||
+					ieltsMinimum ||
+					toeflMinimum ||
+					greMinimum ||
+					gmatMinimum ||
+					otherRequirements.length > 0 ||
+					otherTests.filter((t) => t.name && t.value).length > 0
+						? {
+								gpaMinimum: gpaMinimum
+									? Number.parseFloat(gpaMinimum)
+									: undefined,
+								ieltsMinimum: ieltsMinimum
+									? Number.parseFloat(ieltsMinimum)
+									: undefined,
+								toeflMinimum: toeflMinimum
+									? Number.parseInt(toeflMinimum, 10)
+									: undefined,
+								greMinimum: greMinimum
+									? Number.parseInt(greMinimum, 10)
+									: undefined,
+								gmatMinimum: gmatMinimum
+									? Number.parseInt(gmatMinimum, 10)
+									: undefined,
+								otherRequirements:
+									otherRequirements.length > 0 ? otherRequirements : undefined,
+								otherTests:
+									otherTests.filter((t) => t.name && t.value).length > 0
+										? otherTests.filter((t) => t.name && t.value)
+										: undefined,
+							}
+						: undefined,
 				programUrl: programUrl || undefined,
 				description: description || undefined,
 				englishProficiencyRequirement:
@@ -297,10 +323,10 @@ export default function EditProgramPage() {
 									required
 									disabled={isLoading}
 								/>
-						</div>
+							</div>
 
-						<div className="space-y-2">
-							<Label htmlFor="degreeType">Degree Type *</Label>
+							<div className="space-y-2">
+								<Label htmlFor="degreeType">Degree Type *</Label>
 								<Select
 									value={degreeType}
 									onValueChange={setDegreeType}
@@ -659,6 +685,59 @@ export default function EditProgramPage() {
 								/>
 							</div>
 
+							<div className="space-y-2 md:col-span-2">
+								<Label>Other Tests</Label>
+								<p className="text-sm text-muted-foreground mb-2">
+									Add additional standardized tests (e.g., SAT, Duolingo, PTE)
+								</p>
+								<div className="space-y-2">
+									{otherTests.map((test, index) => (
+										<div
+											key={`other-test-${index}`}
+											className="flex gap-2 items-center"
+										>
+											<Input
+												value={test.name}
+												onChange={(e) =>
+													handleOtherTestChange(index, "name", e.target.value)
+												}
+												placeholder="Test name (e.g., SAT)"
+												disabled={isLoading}
+												className="flex-1"
+											/>
+											<Input
+												value={test.value}
+												onChange={(e) =>
+													handleOtherTestChange(index, "value", e.target.value)
+												}
+												placeholder="Requirement (e.g., 1400+)"
+												disabled={isLoading}
+												className="flex-1"
+											/>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												onClick={() => handleRemoveOtherTest(index)}
+												disabled={isLoading}
+											>
+												<X className="h-4 w-4" />
+											</Button>
+										</div>
+									))}
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={handleAddOtherTest}
+										disabled={isLoading}
+									>
+										<Plus className="h-4 w-4 mr-1" />
+										Add Test
+									</Button>
+								</div>
+							</div>
+
 							<div className="space-y-2">
 								<Label htmlFor="englishProficiencyRequirement">
 									English Proficiency Requirement
@@ -743,7 +822,10 @@ export default function EditProgramPage() {
 												key={suggestion}
 												type="button"
 												onClick={() =>
-													setOtherRequirements([...otherRequirements, suggestion])
+													setOtherRequirements([
+														...otherRequirements,
+														suggestion,
+													])
 												}
 												className="px-2 py-0.5 text-xs rounded border border-input hover:bg-accent"
 											>
@@ -754,9 +836,7 @@ export default function EditProgramPage() {
 							</div>
 
 							<div className="space-y-2 md:col-span-2">
-								<Label htmlFor="admissionRequirement">
-									Additional Notes
-								</Label>
+								<Label htmlFor="admissionRequirement">Additional Notes</Label>
 								<textarea
 									id="admissionRequirement"
 									value={admissionRequirement}
