@@ -59,6 +59,8 @@ export default function EditProgramPage() {
 	const [gpaMinimum, setGpaMinimum] = useState("");
 	const [ieltsMinimum, setIeltsMinimum] = useState("");
 	const [toeflMinimum, setToeflMinimum] = useState("");
+	const [greMinimum, setGreMinimum] = useState("");
+	const [gmatMinimum, setGmatMinimum] = useState("");
 	const [programUrl, setProgramUrl] = useState("");
 	const [description, setDescription] = useState("");
 	const [prerequisiteMajors, setPrerequisiteMajors] = useState<string[]>([]);
@@ -91,8 +93,10 @@ export default function EditProgramPage() {
 				setScholarshipAvailable(data.scholarshipAvailable ? "true" : "false");
 				setGpaMinimum(data.requirements?.gpaMinimum?.toString() || "");
 				setIeltsMinimum(data.requirements?.ieltsMinimum?.toString() || "");
-				setToeflMinimum(data.requirements?.toeflMinimum?.toString() || "");
-				setProgramUrl(data.programUrl || "");
+			setToeflMinimum(data.requirements?.toeflMinimum?.toString() || "");
+			setGreMinimum(data.requirements?.greMinimum?.toString() || "");
+			setGmatMinimum(data.requirements?.gmatMinimum?.toString() || "");
+			setProgramUrl(data.programUrl || "");
 				setDescription(data.description || "");
 				// New fields
 				setPrerequisiteMajors(data.prerequisiteMajors || []);
@@ -187,20 +191,26 @@ export default function EditProgramPage() {
 					? Number.parseInt(applicationFeeUsd, 10)
 					: undefined,
 				scholarshipAvailable: scholarshipAvailable === "true",
-				requirements:
-					gpaMinimum || ieltsMinimum || toeflMinimum
-						? {
-								gpaMinimum: gpaMinimum
-									? Number.parseFloat(gpaMinimum)
-									: undefined,
-								ieltsMinimum: ieltsMinimum
-									? Number.parseFloat(ieltsMinimum)
-									: undefined,
-								toeflMinimum: toeflMinimum
-									? Number.parseInt(toeflMinimum, 10)
-									: undefined,
-							}
-						: undefined,
+			requirements:
+				gpaMinimum || ieltsMinimum || toeflMinimum || greMinimum || gmatMinimum
+					? {
+							gpaMinimum: gpaMinimum
+								? Number.parseFloat(gpaMinimum)
+								: undefined,
+							ieltsMinimum: ieltsMinimum
+								? Number.parseFloat(ieltsMinimum)
+								: undefined,
+							toeflMinimum: toeflMinimum
+								? Number.parseInt(toeflMinimum, 10)
+								: undefined,
+							greMinimum: greMinimum
+								? Number.parseInt(greMinimum, 10)
+								: undefined,
+							gmatMinimum: gmatMinimum
+								? Number.parseInt(gmatMinimum, 10)
+								: undefined,
+						}
+					: undefined,
 				programUrl: programUrl || undefined,
 				description: description || undefined,
 				englishProficiencyRequirement:
@@ -642,6 +652,30 @@ export default function EditProgramPage() {
 									type="number"
 									value={toeflMinimum}
 									onChange={(e) => setToeflMinimum(e.target.value)}
+									disabled={isLoading}
+								/>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="greMinimum">Minimum GRE</Label>
+								<Input
+									id="greMinimum"
+									type="number"
+									value={greMinimum}
+									onChange={(e) => setGreMinimum(e.target.value)}
+									placeholder="e.g., 320"
+									disabled={isLoading}
+								/>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="gmatMinimum">Minimum GMAT</Label>
+								<Input
+									id="gmatMinimum"
+									type="number"
+									value={gmatMinimum}
+									onChange={(e) => setGmatMinimum(e.target.value)}
+									placeholder="e.g., 700"
 									disabled={isLoading}
 								/>
 							</div>

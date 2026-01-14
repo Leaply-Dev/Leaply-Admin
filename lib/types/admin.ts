@@ -151,8 +151,8 @@ export interface ProgramAdminResponse {
 		gpaMinimum?: number;
 		ieltsMinimum?: number;
 		toeflMinimum?: number;
-		greRequired?: boolean;
-		gmatRequired?: boolean;
+		greMinimum?: number;
+		gmatMinimum?: number;
 		workExperienceYears?: number;
 	} | null;
 	programUrl: string | null;
@@ -196,8 +196,8 @@ export interface ProgramCreateRequest {
 		gpaMinimum?: number;
 		ieltsMinimum?: number;
 		toeflMinimum?: number;
-		greRequired?: boolean;
-		gmatRequired?: boolean;
+		greMinimum?: number;
+		gmatMinimum?: number;
 		workExperienceYears?: number;
 	};
 	programUrl?: string;
