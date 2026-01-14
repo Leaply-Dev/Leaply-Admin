@@ -138,6 +138,8 @@ export interface ProgramAdminResponse {
 	language: string;
 	tuition: {
 		annualUsd?: number;
+		annualUsdMin?: number;
+		annualUsdMax?: number;
 		totalUsd?: number;
 		currency?: string;
 		amount?: number;
@@ -154,6 +156,7 @@ export interface ProgramAdminResponse {
 		greMinimum?: number;
 		gmatMinimum?: number;
 		workExperienceYears?: number;
+		otherRequirements?: string[];
 	} | null;
 	programUrl: string | null;
 	admissionsUrl: string | null;
@@ -183,6 +186,8 @@ export interface ProgramCreateRequest {
 	language?: string;
 	tuition?: {
 		annualUsd?: number;
+		annualUsdMin?: number;
+		annualUsdMax?: number;
 		totalUsd?: number;
 		currency?: string;
 		amount?: number;
@@ -199,6 +204,7 @@ export interface ProgramCreateRequest {
 		greMinimum?: number;
 		gmatMinimum?: number;
 		workExperienceYears?: number;
+		otherRequirements?: string[];
 	};
 	programUrl?: string;
 	admissionsUrl?: string;

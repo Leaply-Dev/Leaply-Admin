@@ -136,11 +136,20 @@ export default function ScholarshipsPage() {
 				page,
 				size: 20,
 				search: search || undefined,
-				sourceType: (sourceType as ScholarshipSourceType) || undefined,
-				coverageType: (coverageType as ScholarshipCoverageType) || undefined,
+				sourceType:
+					sourceType && sourceType !== "all"
+						? (sourceType as ScholarshipSourceType)
+						: undefined,
+				coverageType:
+					coverageType && coverageType !== "all"
+						? (coverageType as ScholarshipCoverageType)
+						: undefined,
 				eligibilityType:
-					(eligibilityType as ScholarshipEligibilityType) || undefined,
-				isActive: isActive === "" ? undefined : isActive === "true",
+					eligibilityType && eligibilityType !== "all"
+						? (eligibilityType as ScholarshipEligibilityType)
+						: undefined,
+				isActive:
+					isActive && isActive !== "all" ? isActive === "true" : undefined,
 			});
 			setScholarships(data.content);
 			setTotalPages(data.totalPages);

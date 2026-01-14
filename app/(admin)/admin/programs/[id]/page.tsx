@@ -12,15 +12,12 @@ import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
-	SelectGroup,
 	SelectItem,
-	SelectLabel,
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminApi } from "@/lib/api/adminApi";
-import type { CountryOption, RegionOption } from "@/lib/types/admin";
 
 const PREREQUISITE_SUGGESTIONS = [
 	"Computer Science",
@@ -44,7 +41,6 @@ export default function EditProgramPage() {
 
 	const [universityName, setUniversityName] = useState("");
 	const [name, setName] = useState("");
-	const [country, setCountry] = useState("");
 	const [degreeType, setDegreeType] = useState("");
 	const [degreeName, setDegreeName] = useState("");
 	const [durationMonthsMin, setDurationMonthsMin] = useState("");
@@ -52,7 +48,8 @@ export default function EditProgramPage() {
 	const [deliveryMode, setDeliveryMode] = useState("");
 	const [studyTypes, setStudyTypes] = useState<string[]>([]);
 	const [language, setLanguage] = useState("english");
-	const [tuitionAnnualUsd, setTuitionAnnualUsd] = useState("");
+	const [tuitionAnnualUsdMin, setTuitionAnnualUsdMin] = useState("");
+	const [tuitionAnnualUsdMax, setTuitionAnnualUsdMax] = useState("");
 	const [tuitionCurrency, setTuitionCurrency] = useState("USD");
 	const [applicationFeeUsd, setApplicationFeeUsd] = useState("");
 	const [scholarshipAvailable, setScholarshipAvailable] = useState("false");
@@ -69,10 +66,8 @@ export default function EditProgramPage() {
 	const [englishProficiencyRequirement, setEnglishProficiencyRequirement] =
 		useState("");
 	const [admissionRequirement, setAdmissionRequirement] = useState("");
-
-	// Dropdown options from API
-	const [regionOptions, setRegionOptions] = useState<RegionOption[]>([]);
-	const [countryOptions, setCountryOptions] = useState<CountryOption[]>([]);
+	const [otherRequirements, setOtherRequirements] = useState<string[]>([]);
+	const [otherRequirementInput, setOtherRequirementInput] = useState("");
 
 	useEffect(() => {
 		const fetchProgram = async () => {
@@ -87,7 +82,12 @@ export default function EditProgramPage() {
 				setDeliveryMode(data.deliveryMode || "");
 				setStudyTypes(data.studyTypes || ["Full-time"]);
 				setLanguage(data.language || "english");
-				setTuitionAnnualUsd(data.tuition?.annualUsd?.toString() || "");
+				setTuitionAnnualUsdMin(
+					data.tuition?.annualUsdMin?.toString() ||
+						data.tuition?.annualUsd?.toString() ||
+						"",
+				);
+				setTuitionAnnualUsdMax(data.tuition?.annualUsdMax?.toString() || "");
 				setTuitionCurrency(data.tuitionCurrency || "USD");
 				setApplicationFeeUsd(data.applicationFeeUsd?.toString() || "");
 				setScholarshipAvailable(data.scholarshipAvailable ? "true" : "false");
@@ -107,6 +107,7 @@ export default function EditProgramPage() {
 					data.englishProficiencyRequirement || "",
 				);
 				setAdmissionRequirement(data.admissionRequirement || "");
+				setOtherRequirements(data.requirements?.otherRequirements || []);
 			} catch (err) {
 				setError(err instanceof Error ? err.message : "Failed to load program");
 			} finally {
@@ -115,20 +116,6 @@ export default function EditProgramPage() {
 		};
 		fetchProgram();
 	}, [id]);
-
-	// Fetch dropdown options on mount
-	useEffect(() => {
-		const fetchOptions = async () => {
-			try {
-				const options = await adminApi.getDropdownOptions();
-				setRegionOptions(options.regions);
-				setCountryOptions(options.countries);
-			} catch (err) {
-				console.error("Failed to fetch dropdown options:", err);
-			}
-		};
-		fetchOptions();
-	}, []);
 
 	const handleStudyTypeChange = (type: string, checked: boolean) => {
 		if (checked) {
@@ -183,16 +170,29 @@ export default function EditProgramPage() {
 					? Number.parseInt(minWorkExperienceYears, 10)
 					: undefined,
 				language: language || undefined,
-				tuition: tuitionAnnualUsd
-					? { annualUsd: Number.parseInt(tuitionAnnualUsd, 10) }
-					: undefined,
+				tuition:
+					tuitionAnnualUsdMin || tuitionAnnualUsdMax
+						? {
+								annualUsdMin: tuitionAnnualUsdMin
+									? Number.parseInt(tuitionAnnualUsdMin, 10)
+									: undefined,
+								annualUsdMax: tuitionAnnualUsdMax
+									? Number.parseInt(tuitionAnnualUsdMax, 10)
+									: undefined,
+							}
+						: undefined,
 				tuitionCurrency: tuitionCurrency || undefined,
 				applicationFeeUsd: applicationFeeUsd
 					? Number.parseInt(applicationFeeUsd, 10)
 					: undefined,
 				scholarshipAvailable: scholarshipAvailable === "true",
 			requirements:
-				gpaMinimum || ieltsMinimum || toeflMinimum || greMinimum || gmatMinimum
+				gpaMinimum ||
+				ieltsMinimum ||
+				toeflMinimum ||
+				greMinimum ||
+				gmatMinimum ||
+				otherRequirements.length > 0
 					? {
 							gpaMinimum: gpaMinimum
 								? Number.parseFloat(gpaMinimum)
@@ -209,6 +209,8 @@ export default function EditProgramPage() {
 							gmatMinimum: gmatMinimum
 								? Number.parseInt(gmatMinimum, 10)
 								: undefined,
+							otherRequirements:
+								otherRequirements.length > 0 ? otherRequirements : undefined,
 						}
 					: undefined,
 				programUrl: programUrl || undefined,
@@ -295,47 +297,10 @@ export default function EditProgramPage() {
 									required
 									disabled={isLoading}
 								/>
-							</div>
+						</div>
 
-							<div className="space-y-2">
-								<Label htmlFor="country">Country</Label>
-								<Select
-									value={country}
-									onValueChange={setCountry}
-									disabled={isLoading}
-								>
-									<SelectTrigger>
-										<SelectValue placeholder="Select country">
-											{country &&
-												(countryOptions.find((c) => c.value === country)
-													?.label ||
-													countryOptions.find((c) => c.label === country)
-														?.label ||
-													country)}
-										</SelectValue>
-									</SelectTrigger>
-									<SelectContent>
-										{regionOptions.map((region) => (
-											<SelectGroup key={region.value}>
-												<SelectLabel>{region.label}</SelectLabel>
-												{countryOptions
-													.filter((c) => c.region === region.value)
-													.map((countryOpt) => (
-														<SelectItem
-															key={countryOpt.value}
-															value={countryOpt.value}
-														>
-															{countryOpt.label}
-														</SelectItem>
-													))}
-											</SelectGroup>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="degreeType">Degree Type *</Label>
+						<div className="space-y-2">
+							<Label htmlFor="degreeType">Degree Type *</Label>
 								<Select
 									value={degreeType}
 									onValueChange={setDegreeType}
@@ -487,14 +452,28 @@ export default function EditProgramPage() {
 					<CardContent>
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">
-								<Label htmlFor="tuitionAnnualUsd">Annual Tuition</Label>
-								<Input
-									id="tuitionAnnualUsd"
-									type="number"
-									value={tuitionAnnualUsd}
-									onChange={(e) => setTuitionAnnualUsd(e.target.value)}
-									disabled={isLoading}
-								/>
+								<Label>Annual Tuition</Label>
+								<div className="flex gap-2 items-center">
+									<Input
+										id="tuitionAnnualUsdMin"
+										type="number"
+										value={tuitionAnnualUsdMin}
+										onChange={(e) => setTuitionAnnualUsdMin(e.target.value)}
+										placeholder="Min"
+										disabled={isLoading}
+										className="flex-1"
+									/>
+									<span className="text-muted-foreground">-</span>
+									<Input
+										id="tuitionAnnualUsdMax"
+										type="number"
+										value={tuitionAnnualUsdMax}
+										onChange={(e) => setTuitionAnnualUsdMax(e.target.value)}
+										placeholder="Max (optional)"
+										disabled={isLoading}
+										className="flex-1"
+									/>
+								</div>
 							</div>
 
 							<div className="space-y-2">
@@ -696,8 +675,87 @@ export default function EditProgramPage() {
 							</div>
 
 							<div className="space-y-2 md:col-span-2">
+								<Label>Other Requirements</Label>
+								<p className="text-sm text-muted-foreground mb-2">
+									Add additional requirements (e.g., SOP, Letters of
+									Recommendation, Portfolio)
+								</p>
+								<div className="flex flex-wrap gap-2 mb-2">
+									{otherRequirements.map((req) => (
+										<span
+											key={req}
+											className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-secondary text-secondary-foreground text-sm"
+										>
+											{req}
+											<button
+												type="button"
+												onClick={() =>
+													setOtherRequirements(
+														otherRequirements.filter((r) => r !== req),
+													)
+												}
+												className="hover:text-destructive"
+											>
+												<X className="h-3 w-3" />
+											</button>
+										</span>
+									))}
+								</div>
+								<div className="flex gap-2">
+									<Input
+										value={otherRequirementInput}
+										onChange={(e) => setOtherRequirementInput(e.target.value)}
+										onKeyDown={(e) => {
+											if (
+												(e.key === "Enter" || e.key === ",") &&
+												otherRequirementInput.trim()
+											) {
+												e.preventDefault();
+												if (
+													!otherRequirements.includes(
+														otherRequirementInput.trim(),
+													)
+												) {
+													setOtherRequirements([
+														...otherRequirements,
+														otherRequirementInput.trim(),
+													]);
+												}
+												setOtherRequirementInput("");
+											}
+										}}
+										placeholder="Type and press Enter to add"
+										disabled={isLoading}
+									/>
+								</div>
+								<div className="flex flex-wrap gap-1 mt-2">
+									{[
+										"Statement of Purpose",
+										"Letters of Recommendation",
+										"Portfolio",
+										"Resume/CV",
+										"Writing Sample",
+										"Interview",
+									]
+										.filter((s) => !otherRequirements.includes(s))
+										.map((suggestion) => (
+											<button
+												key={suggestion}
+												type="button"
+												onClick={() =>
+													setOtherRequirements([...otherRequirements, suggestion])
+												}
+												className="px-2 py-0.5 text-xs rounded border border-input hover:bg-accent"
+											>
+												+ {suggestion}
+											</button>
+										))}
+								</div>
+							</div>
+
+							<div className="space-y-2 md:col-span-2">
 								<Label htmlFor="admissionRequirement">
-									Other Admission Requirements
+									Additional Notes
 								</Label>
 								<textarea
 									id="admissionRequirement"
