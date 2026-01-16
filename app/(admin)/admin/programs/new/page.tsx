@@ -281,11 +281,9 @@ export default function NewProgramPage() {
 										<SelectValue placeholder="Select degree type" />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="bachelor">Bachelor</SelectItem>
-										<SelectItem value="master">Master</SelectItem>
+										<SelectItem value="masters">Master's</SelectItem>
+										<SelectItem value="mba">MBA</SelectItem>
 										<SelectItem value="phd">PhD</SelectItem>
-										<SelectItem value="diploma">Diploma</SelectItem>
-										<SelectItem value="certificate">Certificate</SelectItem>
 									</SelectContent>
 								</Select>
 							</div>
@@ -337,7 +335,7 @@ export default function NewProgramPage() {
 										<SelectValue placeholder="Select delivery mode" />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="on-campus">On Campus</SelectItem>
+										<SelectItem value="on_campus">On Campus</SelectItem>
 										<SelectItem value="online">Online</SelectItem>
 										<SelectItem value="hybrid">Hybrid</SelectItem>
 									</SelectContent>
