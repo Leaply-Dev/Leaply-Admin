@@ -30,15 +30,15 @@ import type {
 	UniversityAdminResponse,
 } from "@/lib/types/admin";
 
-const MAJOR_CATEGORIES = [
-	"Computer Science/IT",
-	"Business",
-	"Engineering",
-	"Finance",
-	"Data Science",
-	"Design",
-	"Public Health",
-	"Other",
+const ELIGIBLE_FIELDS: { value: string; label: string }[] = [
+	{ value: "cs_it", label: "Computer Science/IT" },
+	{ value: "business", label: "Business" },
+	{ value: "engineering", label: "Engineering" },
+	{ value: "finance", label: "Finance" },
+	{ value: "data_science", label: "Data Science" },
+	{ value: "design", label: "Design" },
+	{ value: "health", label: "Public Health" },
+	{ value: "other", label: "Other" },
 ];
 
 const REQUIRED_DOCUMENTS: { value: RequiredDocument; label: string }[] = [
@@ -411,18 +411,24 @@ export default function NewScholarshipPage() {
 								</label>
 								{!allFieldsEligible && (
 									<div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 ml-6">
-										{MAJOR_CATEGORIES.map((field) => (
-											<label key={field} className="flex items-center gap-2">
+										{ELIGIBLE_FIELDS.map((field) => (
+											<label
+												key={field.value}
+												className="flex items-center gap-2"
+											>
 												<input
 													type="checkbox"
-													checked={eligibleFields.includes(field)}
+													checked={eligibleFields.includes(field.value)}
 													onChange={(e) =>
-														handleEligibleFieldChange(field, e.target.checked)
+														handleEligibleFieldChange(
+															field.value,
+															e.target.checked,
+														)
 													}
 													disabled={isLoading}
 													className="rounded border-input"
 												/>
-												<span className="text-sm">{field}</span>
+												<span className="text-sm">{field.label}</span>
 											</label>
 										))}
 									</div>
