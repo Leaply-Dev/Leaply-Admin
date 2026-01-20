@@ -46,9 +46,21 @@ export interface DashboardStatsResponse {
 	totalPrograms: number;
 	totalScholarships: number;
 	newScholarshipsThisMonth: number;
+}
 
-	// Program distribution by prerequisite major (bachelor's degree background)
-	programsByPrerequisiteMajor: Record<string, number>;
+// Column Audit (Data Audit Tool)
+export interface ValueCount {
+	value: string;
+	count: number;
+}
+
+export interface ColumnAuditResponse {
+	tableName: string;
+	columnName: string;
+	isArrayColumn: boolean;
+	totalRecords: number;
+	nullCount: number;
+	values: ValueCount[];
 }
 
 // User Admin

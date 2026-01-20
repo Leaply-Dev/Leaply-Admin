@@ -1,5 +1,6 @@
 import type {
 	AuthResponse,
+	ColumnAuditResponse,
 	DashboardStatsResponse,
 	DropdownOptionsResponse,
 	ImportResultResponse,
@@ -65,6 +66,20 @@ export async function logout(): Promise<void> {
 // Stats
 export async function getStats(): Promise<DashboardStatsResponse> {
 	return apiClient.get<DashboardStatsResponse>("/v1/admin/stats");
+}
+
+// Data Audit
+export async function getAuditableTables(): Promise<Record<string, string[]>> {
+	return apiClient.get<Record<string, string[]>>("/v1/admin/audit/tables");
+}
+
+export async function auditColumn(
+	table: string,
+	column: string,
+): Promise<ColumnAuditResponse> {
+	return apiClient.get<ColumnAuditResponse>(
+		`/v1/admin/audit/columns?table=${encodeURIComponent(table)}&column=${encodeURIComponent(column)}`,
+	);
 }
 
 // Dropdown Options
@@ -462,6 +477,8 @@ export const adminApi = {
 	login,
 	logout,
 	getStats,
+	getAuditableTables,
+	auditColumn,
 	getDropdownOptions,
 	getUsers,
 	deleteUser,

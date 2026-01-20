@@ -10,17 +10,10 @@ import {
 	Users,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { DataAuditSection } from "@/components/DataAuditSection";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 import { adminApi } from "@/lib/api/adminApi";
 import type { DashboardStatsResponse } from "@/lib/types/admin";
 
@@ -86,19 +79,6 @@ export default function DashboardPage() {
 		};
 		fetchStats();
 	}, []);
-
-	// Process prerequisite major coverage data - all majors sorted by count descending
-	const prereqMajorData = stats?.programsByPrerequisiteMajor
-		? Object.entries(stats.programsByPrerequisiteMajor).sort(
-				([, a], [, b]) => b - a,
-			)
-		: [];
-
-	// Calculate total for percentage
-	const totalPrereqMajorCount = prereqMajorData.reduce(
-		(sum, [, count]) => sum + count,
-		0,
-	);
 
 	if (error) {
 		return (
@@ -171,53 +151,8 @@ export default function DashboardPage() {
 				) : null}
 			</div>
 
-			{/* Prerequisite Major Coverage */}
-			<Card>
-				<CardHeader>
-					<CardTitle>Prerequisite Major Coverage</CardTitle>
-				</CardHeader>
-				<CardContent>
-					{isLoading ? (
-						<div className="space-y-3">
-							{Array.from({ length: 5 }).map((_, i) => (
-								<div key={i} className="flex justify-between">
-									<Skeleton className="h-4 w-48" />
-									<Skeleton className="h-4 w-16" />
-								</div>
-							))}
-						</div>
-					) : prereqMajorData.length > 0 ? (
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Prerequisite Major</TableHead>
-									<TableHead className="text-right">Programs</TableHead>
-									<TableHead className="text-right">% of Total</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{prereqMajorData.map(([major, count]) => (
-									<TableRow key={major}>
-										<TableCell className="font-medium">{major}</TableCell>
-										<TableCell className="text-right">{count}</TableCell>
-										<TableCell className="text-right text-muted-foreground">
-											{totalPrereqMajorCount > 0
-												? ((count / totalPrereqMajorCount) * 100).toFixed(1)
-												: 0}
-											%
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					) : (
-						<p className="text-sm text-muted-foreground py-4 text-center">
-							No prerequisite major data available. Programs may not have
-							prerequisite majors assigned.
-						</p>
-					)}
-				</CardContent>
-			</Card>
+			{/* Data Audit Tool */}
+			<DataAuditSection />
 		</div>
 	);
 }
