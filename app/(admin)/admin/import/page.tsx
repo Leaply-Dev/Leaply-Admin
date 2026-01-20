@@ -23,7 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { adminApi } from "@/lib/api/adminApi";
 import type { ImportResultResponse } from "@/lib/types/admin";
 
-type EntityType = "universities" | "programs" | "intakes";
+type EntityType = "universities" | "programs" | "intakes" | "scholarships";
 
 interface UploadState {
 	file: File | null;
@@ -56,6 +56,11 @@ const entityConfig: Record<EntityType, { title: string; description: string }> =
 		intakes: {
 			title: "Intakes",
 			description: "Import intake data. Requires program IDs to be referenced.",
+		},
+		scholarships: {
+			title: "Scholarships",
+			description:
+				"Import scholarship data. Can reference universities by name.",
 		},
 	};
 
@@ -139,6 +144,9 @@ function FileUploadZone({
 					break;
 				case "intakes":
 					result = await adminApi.importIntakes(state.file);
+					break;
+				case "scholarships":
+					result = await adminApi.importScholarships(state.file);
 					break;
 			}
 			onStateChange({ ...state, isUploading: false, result, file: null });
@@ -341,6 +349,7 @@ export default function ImportPage() {
 		universities: { ...initialUploadState },
 		programs: { ...initialUploadState },
 		intakes: { ...initialUploadState },
+		scholarships: { ...initialUploadState },
 	});
 
 	const handleStateChange = useCallback(
@@ -354,7 +363,7 @@ export default function ImportPage() {
 		<div>
 			<PageHeader
 				title="CSV Import"
-				description="Import universities, programs, and intakes from CSV files"
+				description="Import universities, programs, intakes, and scholarships from CSV files"
 			/>
 
 			<Tabs
@@ -365,6 +374,7 @@ export default function ImportPage() {
 					<TabsTrigger value="universities">Universities</TabsTrigger>
 					<TabsTrigger value="programs">Programs</TabsTrigger>
 					<TabsTrigger value="intakes">Intakes</TabsTrigger>
+					<TabsTrigger value="scholarships">Scholarships</TabsTrigger>
 				</TabsList>
 
 				<TabsContent value="universities">
@@ -388,6 +398,14 @@ export default function ImportPage() {
 						entityType="intakes"
 						state={uploadStates.intakes}
 						onStateChange={(state) => handleStateChange("intakes", state)}
+					/>
+				</TabsContent>
+
+				<TabsContent value="scholarships">
+					<FileUploadZone
+						entityType="scholarships"
+						state={uploadStates.scholarships}
+						onStateChange={(state) => handleStateChange("scholarships", state)}
 					/>
 				</TabsContent>
 			</Tabs>

@@ -398,8 +398,41 @@ export async function importIntakes(file: File): Promise<ImportResultResponse> {
 	return result.data;
 }
 
+export async function importScholarships(
+	file: File,
+): Promise<ImportResultResponse> {
+	const formData = new FormData();
+	formData.append("file", file);
+
+	const token =
+		typeof window !== "undefined"
+			? localStorage.getItem("leaply-admin-auth")
+			: null;
+	const authData = token ? JSON.parse(token) : null;
+
+	const response = await fetch(
+		`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"}/v1/admin/import/scholarships`,
+		{
+			method: "POST",
+			headers: {
+				...(authData?.state?.accessToken && {
+					Authorization: `Bearer ${authData.state.accessToken}`,
+				}),
+			},
+			body: formData,
+		},
+	);
+
+	if (!response.ok) {
+		throw new Error("Failed to import scholarships");
+	}
+
+	const result = await response.json();
+	return result.data;
+}
+
 export async function downloadTemplate(
-	type: "universities" | "programs" | "intakes",
+	type: "universities" | "programs" | "intakes" | "scholarships",
 ): Promise<Blob> {
 	const token =
 		typeof window !== "undefined"
@@ -461,5 +494,6 @@ export const adminApi = {
 	importUniversities,
 	importPrograms,
 	importIntakes,
+	importScholarships,
 	downloadTemplate,
 };
