@@ -79,8 +79,8 @@ export default function NewProgramPage() {
 	const [deliveryMode, setDeliveryMode] = useState("");
 	const [studyTypes, setStudyTypes] = useState<string[]>(["Full-time"]);
 	const [language, setLanguage] = useState("english");
-	const [tuitionAnnualUsdMin, setTuitionAnnualUsdMin] = useState("");
-	const [tuitionAnnualUsdMax, setTuitionAnnualUsdMax] = useState("");
+	const [tuitionAnnualMin, setTuitionAnnualMin] = useState("");
+	const [tuitionAnnualMax, setTuitionAnnualMax] = useState("");
 	const [tuitionCurrency, setTuitionCurrency] = useState("USD");
 	const [applicationFeeUsd, setApplicationFeeUsd] = useState("");
 	const [scholarshipAvailable, setScholarshipAvailable] = useState("false");
@@ -184,13 +184,13 @@ export default function NewProgramPage() {
 					: undefined,
 				language: language || undefined,
 				tuition:
-					tuitionAnnualUsdMin || tuitionAnnualUsdMax
+					tuitionAnnualMin || tuitionAnnualMax
 						? {
-								annualUsdMin: tuitionAnnualUsdMin
-									? Number.parseInt(tuitionAnnualUsdMin, 10)
+								annualMin: tuitionAnnualMin
+									? Number.parseInt(tuitionAnnualMin, 10)
 									: undefined,
-								annualUsdMax: tuitionAnnualUsdMax
-									? Number.parseInt(tuitionAnnualUsdMax, 10)
+								annualMax: tuitionAnnualMax
+									? Number.parseInt(tuitionAnnualMax, 10)
 									: undefined,
 							}
 						: undefined,
@@ -483,20 +483,20 @@ export default function NewProgramPage() {
 								<Label>Annual Tuition</Label>
 								<div className="flex gap-2 items-center">
 									<Input
-										id="tuitionAnnualUsdMin"
+										id="tuitionAnnualMin"
 										type="number"
-										value={tuitionAnnualUsdMin}
-										onChange={(e) => setTuitionAnnualUsdMin(e.target.value)}
+										value={tuitionAnnualMin}
+										onChange={(e) => setTuitionAnnualMin(e.target.value)}
 										placeholder="Min"
 										disabled={isLoading}
 										className="flex-1"
 									/>
 									<span className="text-muted-foreground">-</span>
 									<Input
-										id="tuitionAnnualUsdMax"
+										id="tuitionAnnualMax"
 										type="number"
-										value={tuitionAnnualUsdMax}
-										onChange={(e) => setTuitionAnnualUsdMax(e.target.value)}
+										value={tuitionAnnualMax}
+										onChange={(e) => setTuitionAnnualMax(e.target.value)}
 										placeholder="Max (optional)"
 										disabled={isLoading}
 										className="flex-1"
