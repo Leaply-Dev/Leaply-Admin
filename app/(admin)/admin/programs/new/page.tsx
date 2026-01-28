@@ -28,6 +28,19 @@ const formatEnumLabel = (value: string): string => {
 		.join(" ");
 };
 
+// Major categories synced with TargetField enum from backend
+// These are the program's field categories for AI matching with user.targetFields
+const MAJOR_CATEGORY_OPTIONS = [
+	{ value: "cs_it", label: "Computer Science / IT" },
+	{ value: "business", label: "Business / Management" },
+	{ value: "finance", label: "Economics / Finance" },
+	{ value: "engineering", label: "Engineering" },
+	{ value: "data_science", label: "Data Science / Analytics" },
+	{ value: "design", label: "Design (UX/UI, Industrial)" },
+	{ value: "health", label: "Public Health / Healthcare" },
+	{ value: "other", label: "Other / Undecided" },
+];
+
 export default function NewProgramPage() {
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
@@ -75,6 +88,7 @@ export default function NewProgramPage() {
 	const [description, setDescription] = useState("");
 	// New fields
 	const [prerequisiteMajors, setPrerequisiteMajors] = useState<string[]>([]);
+	const [majorCategories, setMajorCategories] = useState<string[]>([]);
 	const [minWorkExperienceYears, setMinWorkExperienceYears] = useState("");
 	const [englishProficiencyRequirement, setEnglishProficiencyRequirement] =
 		useState("");
@@ -108,6 +122,14 @@ export default function NewProgramPage() {
 			setPrerequisiteMajors([...prerequisiteMajors, major]);
 		} else {
 			setPrerequisiteMajors(prerequisiteMajors.filter((m) => m !== major));
+		}
+	};
+
+	const handleMajorCategoryChange = (category: string, checked: boolean) => {
+		if (checked) {
+			setMajorCategories([...majorCategories, category]);
+		} else {
+			setMajorCategories(majorCategories.filter((c) => c !== category));
 		}
 	};
 
@@ -148,6 +170,8 @@ export default function NewProgramPage() {
 					: undefined,
 				deliveryMode: deliveryMode || undefined,
 				studyTypes: studyTypes.length > 0 ? studyTypes : undefined,
+				majorCategories:
+					majorCategories.length > 0 ? majorCategories : undefined,
 				prerequisiteMajors:
 					prerequisiteMajors.length > 0 ? prerequisiteMajors : undefined,
 				minWorkExperienceYears: minWorkExperienceYears
@@ -357,6 +381,36 @@ export default function NewProgramPage() {
 												className="rounded border-input"
 											/>
 											<span>{type}</span>
+										</label>
+									))}
+								</div>
+							</div>
+
+							<div className="space-y-2 md:col-span-2">
+								<Label>Major Categories</Label>
+								<p className="text-sm text-muted-foreground mb-2">
+									Select the fields of study this program belongs to. This is
+									used for AI matching with users' target fields.
+								</p>
+								<div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+									{MAJOR_CATEGORY_OPTIONS.map((category) => (
+										<label
+											key={category.value}
+											className="flex items-center gap-2 p-2 rounded border border-input hover:bg-accent cursor-pointer"
+										>
+											<input
+												type="checkbox"
+												checked={majorCategories.includes(category.value)}
+												onChange={(e) =>
+													handleMajorCategoryChange(
+														category.value,
+														e.target.checked,
+													)
+												}
+												disabled={isLoading}
+												className="rounded border-input"
+											/>
+											<span className="text-sm">{category.label}</span>
 										</label>
 									))}
 								</div>
