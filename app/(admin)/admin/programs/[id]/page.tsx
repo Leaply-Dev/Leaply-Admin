@@ -41,6 +41,11 @@ const MAJOR_CATEGORY_OPTIONS = [
 	{ value: "data_science", label: "Data Science / Analytics" },
 	{ value: "design", label: "Design (UX/UI, Industrial)" },
 	{ value: "health", label: "Public Health / Healthcare" },
+	{ value: "arts", label: "Arts" },
+	{ value: "media_communication", label: "Media & Communication" },
+	{ value: "science", label: "Science (Bio, Chem, Math, Physics)" },
+	{ value: "humanities", label: "Humanities" },
+	{ value: "law", label: "Law" },
 	{ value: "other", label: "Other / Undecided" },
 ];
 

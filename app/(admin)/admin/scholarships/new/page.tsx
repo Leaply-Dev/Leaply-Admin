@@ -38,6 +38,11 @@ const ELIGIBLE_FIELDS: { value: string; label: string }[] = [
 	{ value: "data_science", label: "Data Science" },
 	{ value: "design", label: "Design" },
 	{ value: "health", label: "Public Health" },
+	{ value: "arts", label: "Arts" },
+	{ value: "media_communication", label: "Media & Communication" },
+	{ value: "science", label: "Science" },
+	{ value: "humanities", label: "Humanities" },
+	{ value: "law", label: "Law" },
 	{ value: "other", label: "Other" },
 ];
 
