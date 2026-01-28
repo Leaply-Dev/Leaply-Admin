@@ -313,6 +313,14 @@ export default function EditProgramPage() {
 				description={universityName}
 				action={
 					<div className="flex gap-2">
+						<Button
+							type="submit"
+							form="edit-program-form"
+							disabled={isLoading || studyTypes.length === 0}
+						>
+							{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+							Update Program
+						</Button>
 						<Button variant="outline" asChild>
 							<Link href={`/admin/programs/${id}/intakes`}>Manage Intakes</Link>
 						</Button>
@@ -326,7 +334,7 @@ export default function EditProgramPage() {
 				}
 			/>
 
-			<form onSubmit={handleSubmit} className="space-y-6">
+			<form id="edit-program-form" onSubmit={handleSubmit} className="space-y-6">
 				{error && (
 					<div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
 						{error}
