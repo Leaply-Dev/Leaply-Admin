@@ -186,10 +186,10 @@ export default function NewProgramPage() {
 				tuition:
 					tuitionAnnualMin || tuitionAnnualMax
 						? {
-								annualMin: tuitionAnnualMin
+								annualUsdMin: tuitionAnnualMin
 									? Number.parseInt(tuitionAnnualMin, 10)
 									: undefined,
-								annualMax: tuitionAnnualMax
+								annualUsdMax: tuitionAnnualMax
 									? Number.parseInt(tuitionAnnualMax, 10)
 									: undefined,
 							}

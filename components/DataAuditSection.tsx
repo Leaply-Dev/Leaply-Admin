@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, Database, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import {
 	Card,
 	CardContent,
@@ -202,7 +202,9 @@ export function DataAuditSection() {
 								</div>
 							</div>
 							<div className="p-3 bg-muted/50 rounded-lg text-center">
-								<div className="text-lg font-semibold">{auditData.nullCount}</div>
+								<div className="text-lg font-semibold">
+									{auditData.nullCount}
+								</div>
 								<div className="text-xs text-muted-foreground">
 									{auditData.isArrayColumn ? "Empty/Null" : "Null"}
 								</div>

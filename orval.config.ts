@@ -52,35 +52,4 @@ export default defineConfig({
 			baseUrl: "",
 		},
 	},
-	leaplyAdminZod: {
-		input: {
-			target: "https://api.leaply.ai.vn/api/api-docs",
-		},
-		output: {
-			mode: "tags-split",
-			target: "./lib/generated/api/zod",
-			client: "zod",
-			clean: true,
-			biome: false,
-			fileExtension: ".zod.ts",
-			override: {
-				zod: {
-					strict: {
-						response: true,
-						query: true,
-						param: true,
-						header: true,
-						body: true,
-					},
-					coerce: {
-						response: false,
-						query: true,
-						param: true,
-						header: true,
-						body: false,
-					},
-				},
-			},
-		},
-	},
 });

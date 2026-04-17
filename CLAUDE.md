@@ -44,21 +44,17 @@ bun check:ci         # CI check (lint + format + API generation, no auto-fix)
 ## Architecture
 
 ### Authentication Flow
-- Auth state managed by Zustand store in `lib/store/authStore.ts` with localStorage persistence (`leaply-admin-auth` key)
-- User roles: `"user"`, `"data_admin"`, `"super_admin"` (only admins can access)
-- Tokens expire in 15 minutes with automatic proactive refresh at 2 minutes before expiry
-- Session warning modal shown at 1 minute before expiry
-- Protected routes enforced in `app/(admin)/layout.tsx` which redirects unauthenticated/non-admin users
-- Auth state synced to cookies (`leaply-admin-auth-state`) for potential middleware use
-- Token refresh includes race condition protection (prevents logout immediately after login)
-- Token refresh uses subscriber pattern to queue parallel requests during refresh
-- Mutator includes localStorage fallback for tokens when Zustand hasn't hydrated yet
+- **`SESSION` cookie** (HttpOnly, set by backend Spring Session JDBC): actual auth credential — browser sends automatically, never read by JS
+- **`leaply-admin-auth-state` cookie** (non-HttpOnly, synced from Zustand): routing signal for `app/(admin)/layout.tsx` route protection
+- **Store**: `useAuthStore` in `lib/store/authStore.ts` — tracks UI state (profile, role) only; no tokens stored; persisted to localStorage (`leaply-admin-auth` key)
+- **User roles**: `"user"`, `"data_admin"`, `"super_admin"` — only `data_admin` and `super_admin` can access
+- **On 401**: session expired → `logout()` + redirect to `/login?expired=true`; no silent refresh (Spring Session is server-managed)
+- **Protected routes**: `app/(admin)/layout.tsx` checks `isAuthenticated && isAdmin()`, redirects otherwise
 
 ### API Client (Orval + React Query)
 - **Generated from OpenAPI**: `bun generate:api` generates TypeScript client from `https://api.leaply.ai.vn/api/api-docs`
 - **React Query hooks**: Auto-generated `useGetUniversities()`, `useCreateUniversity()`, etc.
-- **Zod validation**: Runtime validation schemas in `lib/generated/api/zod/`
-- **Custom mutator**: `lib/api/mutator.ts` handles auth token injection, automatic 401 token refresh, and FormData support
+- **Custom mutator**: `lib/api/mutator.ts` sends `credentials: "include"` (SESSION cookie auto-attached); on 401 → logout and redirect
 - **Query client**: Created inline in `app/providers.tsx` with useState (Next.js pattern)
   - staleTime: 1 minute
   - gcTime: 5 minutes
@@ -71,10 +67,9 @@ bun check:ci         # CI check (lint + format + API generation, no auto-fix)
 lib/generated/api/
 ├── endpoints/          # React Query hooks by OpenAPI tag
 │   ├── admin/          # Admin CRUD operations
-│   ├── authentication/ # Login, logout, refresh
+│   ├── authentication/ # Login, logout
 │   └── ...
-├── models/             # TypeScript interfaces
-└── zod/                # Zod validation schemas
+└── models/             # TypeScript interfaces
 ```
 
 ### Legacy API Client (`lib/api/client.ts` and `lib/api/adminApi.ts`)
@@ -96,7 +91,6 @@ lib/generated/api/
   - `SearchableSelect`: Debounced search (300ms), recent items cache, min 2 chars to search
   - `ImageUpload`: Drag & drop, 2MB limit, validates JPG/PNG/WebP
   - `Pagination`: Smart page range with ellipsis, 0-indexed
-  - `SessionTimeoutWarning`: Countdown timer with extend/logout
 
 ### Page Patterns
 - **List pages**: `useState` for data/loading/search/page, `useEffect` for fetch, table with action dropdowns
@@ -127,13 +121,12 @@ lib/generated/api/
 - `@/*` maps to project root (e.g., `@/components/ui/button`)
 
 ### Key Files
-- `orval.config.ts`: Orval configuration (dual config: React Query hooks + Zod schemas)
-- `lib/api/mutator.ts`: Custom fetch wrapper for Orval with auth, token refresh, and error handling
+- `orval.config.ts`: Orval configuration for React Query hooks generation
+- `lib/api/mutator.ts`: Custom fetch wrapper for Orval (cookie auth, 401 → logout)
 - `app/providers.tsx`: React Query provider with QueryClient and devtools
 - `lib/generated/api/` (gitignored): Generated API client, regenerated on every build/dev
   - `endpoints/`: React Query hooks by OpenAPI tag
   - `models/`: TypeScript interfaces
-  - `zod/`: Zod validation schemas
 - `lib/api/adminApi.ts`: Legacy manual API functions (being gradually replaced)
 - `lib/types/admin.ts`: Legacy TypeScript types (prefer generated models from `lib/generated/api/models/`)
 - `lib/store/authStore.ts`: Zustand auth store with localStorage persistence and cookie sync

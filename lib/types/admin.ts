@@ -11,21 +11,8 @@ export interface PageResponse<T> {
 export interface AuthResponse {
 	userId: string;
 	email: string;
-	accessToken: string;
-	refreshToken: string;
-	expiresIn: number; // seconds until access token expires
 	role: "user" | "data_admin" | "super_admin";
 	onboardingCompleted: boolean;
-}
-
-export interface RefreshTokenRequest {
-	refreshToken: string;
-}
-
-export interface RefreshTokenResponse {
-	accessToken: string;
-	refreshToken: string;
-	expiresIn: number;
 }
 
 export interface LoginRequest {

@@ -13,21 +13,8 @@ export interface AdminProfile {
 
 interface AuthState {
 	profile: AdminProfile | null;
-	accessToken: string | null;
-	refreshToken: string | null;
-	tokenExpiresAt: number | null; // Unix timestamp in ms
 	isAuthenticated: boolean;
-	login: (
-		profile: AdminProfile,
-		accessToken: string,
-		refreshToken: string,
-		expiresIn: number,
-	) => void;
-	setTokens: (
-		accessToken: string,
-		refreshToken: string,
-		expiresIn: number,
-	) => void;
+	login: (profile: AdminProfile) => void;
 	logout: () => void;
 	isAdmin: () => boolean;
 	isSuperAdmin: () => boolean;
@@ -37,35 +24,11 @@ export const useAuthStore = create<AuthState>()(
 	persist(
 		(set, get) => ({
 			profile: null,
-			accessToken: null,
-			refreshToken: null,
-			tokenExpiresAt: null,
 			isAuthenticated: false,
 
-			login: (profile, accessToken, refreshToken, expiresIn) =>
-				set({
-					profile,
-					accessToken,
-					refreshToken,
-					tokenExpiresAt: Date.now() + expiresIn * 1000,
-					isAuthenticated: true,
-				}),
+			login: (profile) => set({ profile, isAuthenticated: true }),
 
-			setTokens: (accessToken, refreshToken, expiresIn) =>
-				set({
-					accessToken,
-					refreshToken,
-					tokenExpiresAt: Date.now() + expiresIn * 1000,
-				}),
-
-			logout: () =>
-				set({
-					profile: null,
-					accessToken: null,
-					refreshToken: null,
-					tokenExpiresAt: null,
-					isAuthenticated: false,
-				}),
+			logout: () => set({ profile: null, isAuthenticated: false }),
 
 			isAdmin: () => {
 				const { profile } = get();
@@ -83,30 +46,21 @@ export const useAuthStore = create<AuthState>()(
 			name: "leaply-admin-auth",
 			partialize: (state) => ({
 				profile: state.profile,
-				accessToken: state.accessToken,
-				refreshToken: state.refreshToken,
-				tokenExpiresAt: state.tokenExpiresAt,
 				isAuthenticated: state.isAuthenticated,
 			}),
 		},
 	),
 );
 
-// Sync auth state to cookies for potential middleware use
-// Only set cookie when authenticated, remove when not (prevents stale cookie issues)
+// Sync auth state to cookie for Next.js middleware route protection
 useAuthStore.subscribe((state) => {
 	if (state.isAuthenticated) {
-		const authState = {
-			isAuthenticated: state.isAuthenticated,
-			role: state.profile?.role,
-		};
-		Cookies.set("leaply-admin-auth-state", JSON.stringify(authState), {
-			expires: 7,
-			path: "/",
-			sameSite: "lax",
-		});
+		Cookies.set(
+			"leaply-admin-auth-state",
+			JSON.stringify({ isAuthenticated: true, role: state.profile?.role }),
+			{ expires: 7, path: "/", sameSite: "lax" },
+		);
 	} else {
-		// When not authenticated, remove cookie entirely to prevent stale cookie issues
 		Cookies.remove("leaply-admin-auth-state", { path: "/" });
 	}
 });

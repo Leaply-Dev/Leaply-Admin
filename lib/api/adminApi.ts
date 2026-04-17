@@ -49,15 +49,12 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
 
 export async function logout(): Promise<void> {
 	const { useAuthStore } = await import("../store/authStore");
-	const { refreshToken, logout: storeLogout } = useAuthStore.getState();
+	const { logout: storeLogout } = useAuthStore.getState();
 
-	if (refreshToken) {
-		try {
-			await apiClient.post("/v1/auth/logout", { refreshToken });
-		} catch (error) {
-			// Silently fail - we still want to clear local state even if backend fails
-			console.warn("Logout API call failed:", error);
-		}
+	try {
+		await apiClient.post("/v1/auth/logout", {});
+	} catch (error) {
+		console.warn("Logout API call failed:", error);
 	}
 
 	storeLogout();
@@ -173,21 +170,11 @@ export async function uploadUniversityLogo(
 	const formData = new FormData();
 	formData.append("file", file);
 
-	const token =
-		typeof window !== "undefined"
-			? localStorage.getItem("leaply-admin-auth")
-			: null;
-	const authData = token ? JSON.parse(token) : null;
-
 	const response = await fetch(
 		`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"}/v1/admin/universities/upload-logo`,
 		{
 			method: "POST",
-			headers: {
-				...(authData?.state?.accessToken && {
-					Authorization: `Bearer ${authData.state.accessToken}`,
-				}),
-			},
+			credentials: "include",
 			body: formData,
 		},
 	);
@@ -322,21 +309,11 @@ export async function importUniversities(
 	const formData = new FormData();
 	formData.append("file", file);
 
-	const token =
-		typeof window !== "undefined"
-			? localStorage.getItem("leaply-admin-auth")
-			: null;
-	const authData = token ? JSON.parse(token) : null;
-
 	const response = await fetch(
 		`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"}/v1/admin/import/universities`,
 		{
 			method: "POST",
-			headers: {
-				...(authData?.state?.accessToken && {
-					Authorization: `Bearer ${authData.state.accessToken}`,
-				}),
-			},
+			credentials: "include",
 			body: formData,
 		},
 	);
@@ -355,21 +332,11 @@ export async function importPrograms(
 	const formData = new FormData();
 	formData.append("file", file);
 
-	const token =
-		typeof window !== "undefined"
-			? localStorage.getItem("leaply-admin-auth")
-			: null;
-	const authData = token ? JSON.parse(token) : null;
-
 	const response = await fetch(
 		`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"}/v1/admin/import/programs`,
 		{
 			method: "POST",
-			headers: {
-				...(authData?.state?.accessToken && {
-					Authorization: `Bearer ${authData.state.accessToken}`,
-				}),
-			},
+			credentials: "include",
 			body: formData,
 		},
 	);
@@ -386,21 +353,11 @@ export async function importIntakes(file: File): Promise<ImportResultResponse> {
 	const formData = new FormData();
 	formData.append("file", file);
 
-	const token =
-		typeof window !== "undefined"
-			? localStorage.getItem("leaply-admin-auth")
-			: null;
-	const authData = token ? JSON.parse(token) : null;
-
 	const response = await fetch(
 		`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"}/v1/admin/import/intakes`,
 		{
 			method: "POST",
-			headers: {
-				...(authData?.state?.accessToken && {
-					Authorization: `Bearer ${authData.state.accessToken}`,
-				}),
-			},
+			credentials: "include",
 			body: formData,
 		},
 	);
@@ -419,21 +376,11 @@ export async function importScholarships(
 	const formData = new FormData();
 	formData.append("file", file);
 
-	const token =
-		typeof window !== "undefined"
-			? localStorage.getItem("leaply-admin-auth")
-			: null;
-	const authData = token ? JSON.parse(token) : null;
-
 	const response = await fetch(
 		`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"}/v1/admin/import/scholarships`,
 		{
 			method: "POST",
-			headers: {
-				...(authData?.state?.accessToken && {
-					Authorization: `Bearer ${authData.state.accessToken}`,
-				}),
-			},
+			credentials: "include",
 			body: formData,
 		},
 	);
@@ -449,21 +396,9 @@ export async function importScholarships(
 export async function downloadTemplate(
 	type: "universities" | "programs" | "intakes" | "scholarships",
 ): Promise<Blob> {
-	const token =
-		typeof window !== "undefined"
-			? localStorage.getItem("leaply-admin-auth")
-			: null;
-	const authData = token ? JSON.parse(token) : null;
-
 	const response = await fetch(
 		`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"}/v1/admin/import/templates/${type}`,
-		{
-			headers: {
-				...(authData?.state?.accessToken && {
-					Authorization: `Bearer ${authData.state.accessToken}`,
-				}),
-			},
-		},
+		{ credentials: "include" },
 	);
 
 	if (!response.ok) {

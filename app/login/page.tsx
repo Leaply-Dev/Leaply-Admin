@@ -38,17 +38,12 @@ export default function LoginPage() {
 			}
 
 			// Login successful
-			login(
-				{
-					id: response.userId,
-					email: response.email,
-					fullName: "",
-					role: response.role,
-				},
-				response.accessToken,
-				response.refreshToken,
-				response.expiresIn,
-			);
+			login({
+				id: response.userId,
+				email: response.email,
+				fullName: "",
+				role: response.role,
+			});
 
 			router.push("/admin/universities");
 		} catch (err) {

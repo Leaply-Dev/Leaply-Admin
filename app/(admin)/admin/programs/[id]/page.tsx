@@ -104,16 +104,11 @@ export default function EditProgramPage() {
 				setStudyTypes(data.studyTypes || ["Full-time"]);
 				setLanguage(data.language || "english");
 				setTuitionAnnualMin(
-					data.tuition?.annualMin?.toString() ||
-						data.tuition?.annualUsdMin?.toString() ||
+					data.tuition?.annualUsdMin?.toString() ||
 						data.tuition?.annualUsd?.toString() ||
 						"",
 				);
-				setTuitionAnnualMax(
-					data.tuition?.annualMax?.toString() ||
-						data.tuition?.annualUsdMax?.toString() ||
-						"",
-				);
+				setTuitionAnnualMax(data.tuition?.annualUsdMax?.toString() || "");
 				setTuitionCurrency(data.tuitionCurrency || "USD");
 				setApplicationFeeUsd(data.applicationFeeUsd?.toString() || "");
 				setScholarshipAvailable(data.scholarshipAvailable ? "true" : "false");
@@ -229,10 +224,10 @@ export default function EditProgramPage() {
 				tuition:
 					tuitionAnnualMin || tuitionAnnualMax
 						? {
-								annualMin: tuitionAnnualMin
+								annualUsdMin: tuitionAnnualMin
 									? Number.parseInt(tuitionAnnualMin, 10)
 									: undefined,
-								annualMax: tuitionAnnualMax
+								annualUsdMax: tuitionAnnualMax
 									? Number.parseInt(tuitionAnnualMax, 10)
 									: undefined,
 							}
@@ -344,7 +339,11 @@ export default function EditProgramPage() {
 				}
 			/>
 
-			<form id="edit-program-form" onSubmit={handleSubmit} className="space-y-6">
+			<form
+				id="edit-program-form"
+				onSubmit={handleSubmit}
+				className="space-y-6"
+			>
 				{error && (
 					<div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
 						{error}
