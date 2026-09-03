@@ -47,3 +47,6 @@ ADMIN_FRONTEND_SPEC.md
 
 # Deployment guide (contains sensitive instructions)
 DEPLOY.md
+
+# IDE
+.idea/
